@@ -15,6 +15,7 @@
             --dark: #1f2937;
             --light: #f3f4f6;
             --whatsapp: #25d366;
+            --danger: #ef4444;
         }
 
         * {
@@ -147,6 +148,7 @@
             flex-direction: column;
             justify-content: space-between;
             transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
         }
 
         .card:hover {
@@ -154,7 +156,32 @@
             box-shadow: 0 10px 15px rgba(0,0,0,0.08);
         }
 
-        /* Miniature de la première page intégrée dans la carte */
+        /* Bouton de suppression individuel sur la carte (visible si admin actif) */
+        .btn-delete-card {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--danger);
+            color: white;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: none; /* Masqué par défaut, s'affiche en mode admin */
+            justify-content: center;
+            align-items: center;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            z-index: 10;
+            transition: 0.2s;
+        }
+
+        .btn-delete-card:hover {
+            background: #dc2626;
+            transform: scale(1.1);
+        }
+
         .card-thumbnail {
             width: 100%;
             height: 160px;
@@ -163,14 +190,14 @@
             overflow: hidden;
             margin-bottom: 1rem;
             position: relative;
-            pointer-events: none; /* Empêche les interactions directes pour garder un design propre */
+            pointer-events: none;
         }
 
         .card-thumbnail iframe {
             width: 100%;
             height: 250px;
             border: none;
-            margin-top: -45px; /* Centre visuellement la première page */
+            margin-top: -45px;
         }
 
         .card h3 {
@@ -379,6 +406,7 @@
                 <input type="text" id="doc-link" placeholder="Lien de partage Google Drive ou ID du fichier">
                 <button class="btn btn-primary" onclick="addNewDocument()">Publier dans la bibliothèque</button>
             </div>
+            <p style="margin-top:1rem; font-size:0.85rem; color:#6b7280;"><i class="fa-solid fa-info-circle"></i> Astuce : En mode Admin, un bouton rouge avec une corbeille apparaît sur chaque carte pour supprimer un cours instantanément.</p>
         </div>
 
         <section>
@@ -440,6 +468,7 @@
         };
 
         let cart = JSON.parse(localStorage.getItem('digiprint_cart')) || [];
+        let isAdminVisible = false; // Suivi de l'état du panneau admin
 
         document.addEventListener('DOMContentLoaded', () => {
             updateCartCount();
@@ -448,7 +477,16 @@
 
         window.toggleAdminPanel = function() {
             const panel = document.getElementById('admin-panel');
-            panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+            isAdminVisible = panel.style.display === 'block';
+            
+            // Inverse l'état
+            isAdminVisible = !isAdminVisible;
+            panel.style.display = isAdminVisible ? 'block' : 'none';
+
+            // Affiche ou masque les boutons de suppression sur toutes les cartes en direct
+            document.querySelectorAll('.btn-delete-card').forEach(btn => {
+                btn.style.display = isAdminVisible ? 'flex' : 'none';
+            });
         };
 
         function extractDriveId(input) {
@@ -495,6 +533,20 @@
             }
         };
 
+        // Fonction pour supprimer un document de Firebase
+        window.deleteDocument = async function(docId, title) {
+            if (confirm(`Voulez-vous vraiment supprimer "${title}" de la bibliothèque ?`)) {
+                try {
+                    await db.collection("documents").doc(docId).delete();
+                    alert("Document supprimé avec succès !");
+                    loadDocuments();
+                } catch (error) {
+                    console.error("Erreur de suppression : ", error);
+                    alert("Erreur lors de la suppression du document.");
+                }
+            }
+        };
+
         function loadDocuments() {
             const grid = document.getElementById('documents-grid');
 
@@ -505,13 +557,19 @@
                 }
 
                 let html = '';
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
+                querySnapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const docId = docSnap.id;
                     const safeTitle = data.title.replace(/'/g, "\\'");
+                    const deleteDisplay = isAdminVisible ? 'flex' : 'none';
                     
                     html += `
                         <div class="card">
-                            <!-- Aperçu miniature automatique de la première page -->
+                            <!-- Bouton de suppression Admin -->
+                            <button class="btn-delete-card" style="display: ${deleteDisplay};" onclick="deleteDocument('${docId}', '${safeTitle}')" title="Supprimer ce document">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+
                             <div class="card-thumbnail">
                                 <iframe src="https://drive.google.com/file/d/${data.fileId}/preview"></iframe>
                             </div>
@@ -523,7 +581,7 @@
                             <div class="card-actions" style="margin-top:1rem;">
                                 <button class="btn btn-outline" onclick="openPreview('${data.fileId}', '${safeTitle}')"><i class="fa-solid fa-eye"></i> Zoom</button>
                                 <a href="https://drive.google.com/uc?export=download&id=${data.fileId}" class="btn btn-outline" target="_blank"><i class="fa-solid fa-download"></i> Télécharger</a>
-                                <button class="btn btn-primary" onclick="addToCart('${safeTitle}', 'doc', ${data.pages})"><i class="fa-solid fa-print"></i> Imprimer en 1 clic</button>
+                                <button class="btn-primary btn" onclick="addToCart('${safeTitle}', 'doc', ${data.pages})"><i class="fa-solid fa-print"></i> Imprimer en 1 clic</button>
                             </div>
                         </div>
                     `;
@@ -652,7 +710,7 @@
                         </div>
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px; font-size:0.85rem;">
                             <label>Quantité: <input type="number" value="${item.qty}" min="1" style="width:40px;" onchange="updateItemOption(${index}, 'qty', this.value)"></label>
-                            <span style="font-weight:bold; color:var(--primary-dark);">${itemTotal} FCFA</span>
+                            <span style="font-weight:bold; color:var(--primary-dark);">${itemTextFormat = itemTotal} FCFA</span>
                         </div>
                     </div>
                 `;
@@ -664,7 +722,7 @@
 
         window.checkoutWhatsApp = function() {
             if (cart.length === 0) {
-                alert("Website vide !");
+                alert("Votre panier est vide !");
                 return;
             }
 
