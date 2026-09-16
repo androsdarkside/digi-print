@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DIGI-PRINT 2iE - Bibliothèque & Aperçu</title>
+    <title>DIGI-PRINT 2iE - Bibliothèque dynamique Google Drive</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Firebase Firestore SDK (Gratuit pour la base de données) -->
+    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-compat.js"></script>
     <style>
         :root {
             --primary: #10b981;
@@ -51,6 +54,28 @@
             color: var(--primary);
         }
 
+        .header-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .btn-admin {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .btn-admin:hover {
+            background: var(--primary);
+            color: white;
+        }
+
         .cart-btn {
             background: var(--primary);
             color: white;
@@ -81,6 +106,30 @@
             color: var(--dark);
             border-left: 5px solid var(--primary);
             padding-left: 10px;
+        }
+
+        /* Panneau Admin (Caché par défaut) */
+        .admin-panel {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: none;
+            border-top: 5px solid var(--dark);
+        }
+
+        .admin-form {
+            display: grid;
+            gap: 1rem;
+            max-width: 600px;
+        }
+
+        .admin-form input, .admin-form textarea {
+            padding: 0.8rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            width: 100%;
         }
 
         .grid {
@@ -151,14 +200,14 @@
         .btn-primary {
             background: var(--primary);
             color: white;
-            grid-column: 1 / -1; /* Le bouton imprimer prend toute la largeur */
+            grid-column: 1 / -1;
         }
 
         .btn-primary:hover {
             background: var(--primary-dark);
         }
 
-        /* Fenêtre Modale Générique (Panier et Aperçu) */
+        /* Fenêtre Modale Aperçu */
         .modal {
             display: none;
             position: fixed;
@@ -172,18 +221,6 @@
             z-index: 1000;
         }
 
-        .modal-content {
-            background: white;
-            width: 90%;
-            max-width: 600px;
-            border-radius: 10px;
-            padding: 2rem;
-            max-height: 85vh;
-            overflow-y: auto;
-            position: relative;
-        }
-
-        /* Modale spécifique pour l'aperçu du document */
         .preview-modal-content {
             background: white;
             width: 95%;
@@ -202,6 +239,17 @@
             border: 1px solid #d1d5db;
             border-radius: 6px;
             margin-top: 1rem;
+        }
+
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 10px;
+            padding: 2rem;
+            max-height: 85vh;
+            overflow-y: auto;
+            position: relative;
         }
 
         .close-modal {
@@ -291,63 +339,37 @@
 
     <header>
         <h1><i class="fa-solid fa-print"></i> DIGI-<span>PRINT</span> (Bibliothèque 2iE)</h1>
-        <button class="cart-btn" onclick="openCart()">
-            <i class="fa-solid fa-cart-shopping"></i> Panier <span id="cart-count" class="badge">0</span>
-        </button>
+        <div class="header-actions">
+            <button class="btn-admin" onclick="toggleAdminPanel()"><i class="fa-solid fa-lock"></i> Admin</button>
+            <button class="cart-btn" onclick="openCart()">
+                <i class="fa-solid fa-cart-shopping"></i> Panier <span id="cart-count" class="badge">0</span>
+            </button>
+        </div>
     </header>
 
     <div class="container">
+        
+        <!-- ESPACE ADMIN POUR AJOUTER UN COURS DIRECTEMENT -->
+        <div class="admin-panel" id="admin-panel">
+            <h2 class="section-title" style="margin-bottom:1rem;">Ajouter un document (via lien Google Drive)</h2>
+            <div class="admin-form">
+                <input type="text" id="doc-title" placeholder="Titre du cours (ex: Électrotechnique S5)">
+                <textarea id="doc-desc" placeholder="Courte description..."></textarea>
+                <input type="number" id="doc-pages" placeholder="Nombre de pages estimé (ex: 30)">
+                <input type="text" id="doc-link" placeholder="Lien de partage Google Drive ou ID du fichier">
+                <button class="btn btn-primary" onclick="addNewDocument()">Publier dans la bibliothèque</button>
+            </div>
+        </div>
+
         <section>
             <h2 class="section-title">Cours, Rapports & Supports 2iE</h2>
-            <div class="grid">
-                
-                <!-- DOCUMENT 1 -->
-                <div class="card">
-                    <div>
-                        <h3>Modèle Officiel - Rapport de Stage 2iE</h3>
-                        <p>Format Word (.docx) normalisé pour la rédaction de vos mémoires.</p>
-                        <span style="font-size:0.8rem; color:#059669; font-weight:bold;">Estimé à 25 pages</span>
-                    </div>
-                    <div class="card-actions">
-                        <button class="btn btn-outline" onclick="openPreview('ID_DU_FICHIER_GOOGLE_DRIVE', 'Modèle Officiel - Rapport de Stage 2iE')"><i class="fa-solid fa-eye"></i> Aperçu</button>
-                        <a href="https://drive.google.com/uc?export=download&id=ID_DU_FICHIER_GOOGLE_DRIVE" class="btn btn-outline" target="_blank"><i class="fa-solid fa-download"></i> Télécharger</a>
-                        <button class="btn btn-primary" onclick="addToCart('Modèle Rapport de Stage 2iE', 'doc', 25)"><i class="fa-solid fa-print"></i> Imprimer en 1 clic</button>
-                    </div>
-                </div>
-
-                <!-- DOCUMENT 2 -->
-                <div class="card">
-                    <div>
-                        <h3>Cours Solaire Photovoltaïque (Génie Énergétique)</h3>
-                        <p>Support complet de dimensionnement et d'installation des systèmes solaires.</p>
-                        <span style="font-size:0.8rem; color:#059669; font-weight:bold;">Estimé à 40 pages</span>
-                    </div>
-                    <div class="card-actions">
-                        <button class="btn btn-outline" onclick="openPreview('ID_DU_FICHIER_GOOGLE_DRIVE', 'Cours Solaire Photovoltaïque')"><i class="fa-solid fa-eye"></i> Aperçu</button>
-                        <a href="https://drive.google.com/uc?export=download&id=ID_DU_FICHIER_GOOGLE_DRIVE" class="btn btn-outline" target="_blank"><i class="fa-solid fa-download"></i> Télécharger</a>
-                        <button class="btn btn-primary" onclick="addToCart('Cours Solaire PV (Support)', 'doc', 40)"><i class="fa-solid fa-print"></i> Imprimer en 1 clic</button>
-                    </div>
-                </div>
-
-                <!-- DOCUMENT 3 -->
-                <div class="card">
-                    <div>
-                        <h3>Anciens Sujets - Automatisme & Régulation</h3>
-                        <p>Compilation de contrôles et examens avec corrections types.</p>
-                        <span style="font-size:0.8rem; color:#059669; font-weight:bold;">Estimé à 20 pages</span>
-                    </div>
-                    <div class="card-actions">
-                        <button class="btn btn-outline" onclick="openPreview('ID_DU_FICHIER_GOOGLE_DRIVE', 'Anciens Sujets - Automatisme')"><i class="fa-solid fa-eye"></i> Aperçu</button>
-                        <a href="https://drive.google.com/uc?export=download&id=ID_DU_FICHIER_GOOGLE_DRIVE" class="btn btn-outline" target="_blank"><i class="fa-solid fa-download"></i> Télécharger</a>
-                        <button class="btn btn-primary" onclick="addToCart('Sujets Automatisme & Régul', 'doc', 20)"><i class="fa-solid fa-print"></i> Imprimer en 1 clic</button>
-                    </div>
-                </div>
-
+            <div class="grid" id="documents-grid">
+                <p style="color:#6b7280; text-align:center; grid-column:1/-1;">Chargement des documents...</p>
             </div>
         </section>
     </div>
 
-    <!-- MODAL APERÇU DU DOCUMENT -->
+    <!-- MODAL APERÇU -->
     <div class="modal" id="preview-modal">
         <div class="preview-modal-content">
             <span class="close-modal" onclick="closePreview()">&times;</span>
@@ -377,6 +399,21 @@
     </div>
 
     <script>
+        // CONFIGURATION FIREBASE (Utilise tes codes Firebase Firestore récupérés plus tôt)
+        const firebaseConfig = {
+            apiKey: "AIzaSyAJar3VAm2herR7Y870iie9JJkI3eVEeOU",
+            authDomain: "digi-print-23daa.firebaseapp.com",
+            databaseURL: "https://digi-print-23daa-default-rtdb.firebaseio.com",
+            projectId: "digi-print-23daa",
+            storageBucket: "digi-print-23daa.firebasestorage.app",
+            messagingSenderId: "638135682946",
+            appId: "1:638135682946:web:1bfa321bd9755ef6f9319b",
+            measurementId: "G-W83W105CH1"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
         const RATES = {
             'nb_verso': 15,
             'nb_recto_verso': 25,
@@ -388,7 +425,98 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             updateCartCount();
+            loadDocuments();
         });
+
+        function toggleAdminPanel() {
+            const panel = document.getElementById('admin-panel');
+            panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // Fonction pour extraire l'ID Google Drive d'un lien complet ou direct
+        function extractDriveId(input) {
+            input = input.trim();
+            // Si l'utilisateur colle un lien complet type https://drive.google.com/file/d/1A2B3C.../view
+            const match = input.match(/\/d\/([a-zA-Z0-9_-]+)/);
+            if (match && match[1]) {
+                return match[1];
+            }
+            // Sinon on considère que c'est déjà l'ID direct
+            return input;
+        }
+
+        // Ajouter un document depuis le panneau admin du site
+        async function addNewDocument() {
+            const title = document.getElementById('doc-title').value.trim();
+            const desc = document.getElementById('doc-desc').value.trim();
+            const pages = parseInt(document.getElementById('doc-pages').value) || 1;
+            const rawLink = document.getElementById('doc-link').value.trim();
+
+            if (!title || !rawLink) {
+                alert("Veuillez renseigner le titre et le lien Google Drive !");
+                return;
+            }
+
+            const fileId = extractDriveId(rawLink);
+
+            try {
+                await db.collection("documents").add({
+                    title: title,
+                    description: desc || "Support académique 2iE",
+                    pages: pages,
+                    fileId: fileId,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                alert("Document publié avec succès sur le site !");
+                document.getElementById('doc-title').value = '';
+                document.getElementById('doc-desc').value = '';
+                document.getElementById('doc-pages').value = '';
+                document.getElementById('doc-link').value = '';
+                toggleAdminPanel();
+                loadDocuments();
+            } catch (error) {
+                console.error("Erreur d'ajout : ", error);
+                alert("Erreur lors de l'enregistrement.");
+            }
+        }
+
+        // Charger dynamiquement les documents depuis Firestore
+        function loadDocuments() {
+            const grid = document.getElementById('documents-grid');
+
+            db.collection("documents").orderBy("createdAt", "desc").get().then((querySnapshot) => {
+                if (querySnapshot.empty) {
+                    grid.innerHTML = `<p style="color:#6b7280; text-align:center; grid-column:1/-1;">Aucun document disponible pour le moment.</p>`;
+                    return;
+                }
+
+                let html = '';
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const safeTitle = data.title.replace(/'/g, "\\'");
+                    
+                    html += `
+                        <div class="card">
+                            <div>
+                                <h3>${data.title}</h3>
+                                <p>${data.description}</p>
+                                <span style="font-size:0.8rem; color:#059669; font-weight:bold;">Estimé à ${data.pages} pages</span>
+                            </div>
+                            <div class="card-actions" style="margin-top:1rem;">
+                                <button class="btn btn-outline" onclick="openPreview('${data.fileId}', '${safeTitle}')"><i class="fa-solid fa-eye"></i> Aperçu</button>
+                                <a href="https://drive.google.com/uc?export=download&id=${data.fileId}" class="btn btn-outline" target="_blank"><i class="fa-solid fa-download"></i> Télécharger</a>
+                                <button class="btn btn-primary" onclick="addToCart('${safeTitle}', 'doc', ${data.pages})"><i class="fa-solid fa-print"></i> Imprimer en 1 clic</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                grid.innerHTML = html;
+            }).catch((error) => {
+                console.error("Erreur de chargement : ", error);
+                grid.innerHTML = `<p style="color:red; text-align:center; grid-column:1/-1;">Erreur de chargement des documents.</p>`;
+            });
+        }
 
         // Gestion de l'Aperçu
         function openPreview(fileId, title) {
@@ -397,7 +525,6 @@
             const titleEl = document.getElementById('preview-title');
 
             titleEl.innerText = `Aperçu : ${title}`;
-            // Lien d'intégration Google Drive pour l'affichage en iframe
             iframe.src = `https://drive.google.com/file/d/${fileId}/preview`;
             modal.style.display = 'flex';
         }
@@ -406,7 +533,7 @@
             const modal = document.getElementById('preview-modal');
             const iframe = document.getElementById('preview-iframe');
             modal.style.display = 'none';
-            iframe.src = ""; // Vide l'iframe pour stopper la lecture/chargement
+            iframe.src = "";
         }
 
         // Gestion du Panier
@@ -539,8 +666,7 @@
 
             message += `*TOTAL GLOBAL : ${grandTotal} FCFA*\n\nMerci de valider ma commande.`;
 
-            // Remplace par ton vrai numéro WhatsApp professionnel (ex: 226XXXXXXXX)
-            const phoneNumber = "22600000000"; 
+            const phoneNumber = "22600000000"; // Remplace par ton numéro WhatsApp pro
             const encodedMessage = encodeURIComponent(message);
             
             window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, '_blank');
