@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DIGI-PRINT 2iE - Bibliothèque S1 à S9</title>
+    <title>DIGI-PRINT 2iE - Bibliothèque & Anciens Sujets S1 à S9</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Firebase SDK (App, Auth, Firestore) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -17,6 +17,7 @@
             --light: #f3f4f6;
             --whatsapp: #25d366;
             --danger: #ef4444;
+            --exam: #f59e0b; /* Couleur spécifique pour les sujets d'examens */
         }
 
         * {
@@ -108,7 +109,7 @@
             gap: 8px;
             overflow-x: auto;
             padding-bottom: 10px;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             scrollbar-width: thin;
         }
 
@@ -135,9 +136,42 @@
             border-color: var(--primary);
         }
 
+        /* Sélecteur de type : Cours vs Examens */
+        .type-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 2rem;
+        }
+
+        .type-btn {
+            background: white;
+            border: 2px solid #e5e7eb;
+            color: #4b5563;
+            padding: 0.5rem 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .type-btn.active.cours {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .type-btn.active.exams {
+            background: var(--exam);
+            color: white;
+            border-color: var(--exam);
+        }
+
         h2.section-title {
             font-size: 1.6rem;
-            margin: 2rem 0 1rem 0;
+            margin: 1.5rem 0 1rem 0;
             color: var(--dark);
             border-left: 5px solid var(--primary);
             padding-left: 10px;
@@ -446,10 +480,14 @@
                     <option value="S8">Semestre 8 (S8)</option>
                     <option value="S9">Semestre 9 (S9)</option>
                 </select>
-                <input type="text" id="doc-section" placeholder="Nom de la section / du cours (ex: Électrotechnique)">
-                <input type="text" id="doc-title" placeholder="Titre du document (ex: Cours Chapitre 1)">
+                <select id="doc-type">
+                    <option value="cours">📚 Cours & Supports</option>
+                    <option value="exam">📝 Ancien Sujet / Examen</option>
+                </select>
+                <input type="text" id="doc-section" placeholder="Nom de la matière (ex: Électrotechnique)">
+                <input type="text" id="doc-title" placeholder="Titre du document (ex: Contrôle 2025 ou Chapitre 1)">
                 <textarea id="doc-desc" placeholder="Courte description..."></textarea>
-                <input type="number" id="doc-pages" placeholder="Nombre de pages estimé (ex: 30)">
+                <input type="number" id="doc-pages" placeholder="Nombre de pages estimé (ex: 5)">
                 <input type="text" id="doc-link" placeholder="Lien de partage Google Drive ou ID du fichier">
                 <button class="btn btn-primary" onclick="addNewDocument()">Publier dans la bibliothèque</button>
             </div>
@@ -468,11 +506,21 @@
             <button class="semester-btn" onclick="switchSemester('S9')">Semestre 9</button>
         </div>
 
-        <!-- CONTENEUR DES COURS DU SEMESTRE ACTIF -->
+        <!-- SÉLECTEUR DE CATÉGORIE (COURS vs ANCIENS SUJETS) -->
+        <div class="type-selector">
+            <button class="type-btn active cours" id="btn-type-cours" onclick="switchDocType('cours')">
+                <i class="fa-solid fa-book-open"></i> Cours & Supports
+            </button>
+            <button class="type-btn exams" id="btn-type-exams" onclick="switchDocType('exam')">
+                <i class="fa-solid fa-file-lines"></i> Anciens Sujets & Examens
+            </button>
+        </div>
+
+        <!-- CONTENEUR DES COURS DU SEMESTRE ET TYPE ACTIFS -->
         <section>
-            <h2 class="section-title" id="current-semester-title">Semestre 5</h2>
+            <h2 class="section-title" id="current-section-title">Semestre 5 - Cours & Supports</h2>
             <div id="semester-content">
-                <p style="color:#6b7280; text-align:center;">Chargement des cours...</p>
+                <p style="color:#6b7280; text-align:center;">Chargement des documents...</p>
             </div>
         </section>
     </div>
@@ -543,8 +591,9 @@
 
         let cart = JSON.parse(localStorage.getItem('digiprint_cart')) || [];
         let isUserAdmin = false;
-        let activeSemester = 'S5'; // Semestre affiché par défaut
-        let allDocuments = []; // Cache local des documents
+        let activeSemester = 'S5'; // Semestre actif par défaut
+        let activeType = 'cours'; // Type actif par défaut ('cours' ou 'exam')
+        let allDocuments = [];
 
         document.addEventListener('DOMContentLoaded', () => {
             updateCartCount();
@@ -566,20 +615,43 @@
                     adminIcon.className = "fa-solid fa-lock";
                     adminPanel.style.display = 'none';
                 }
-                renderActiveSemester();
+                renderActiveView();
             });
         });
 
-        // Changement de semestre par les onglets
+        // Changement de Semestre
         window.switchSemester = function(sem) {
             activeSemester = sem;
             document.querySelectorAll('.semester-btn').forEach(btn => {
                 btn.classList.remove('active');
                 if(btn.innerText.includes(sem)) btn.classList.add('active');
             });
-            document.getElementById('current-semester-title').innerText = `Semestre ${sem.replace('S', '')}`;
-            renderActiveSemester();
+            updateTitle();
+            renderActiveView();
         };
+
+        // Changement de Type (Cours vs Anciens Sujets)
+        window.switchDocType = function(type) {
+            activeType = type;
+            const btnCours = document.getElementById('btn-type-cours');
+            const btnExams = document.getElementById('btn-type-exams');
+
+            if (type === 'cours') {
+                btnCours.classList.add('active', 'cours');
+                btnExams.classList.remove('active', 'exams');
+            } else {
+                btnExams.classList.add('active', 'exams');
+                btnCours.classList.remove('active', 'cours');
+            }
+            updateTitle();
+            renderActiveView();
+        };
+
+        function updateTitle() {
+            const semNum = activeSemester.replace('S', '');
+            const typeLabel = activeType === 'cours' ? 'Cours & Supports' : 'Anciens Sujets & Examens';
+            document.getElementById('current-section-title').innerText = `Semestre ${semNum} - ${typeLabel}`;
+        }
 
         window.handleAdminClick = function() {
             if (isUserAdmin) {
@@ -624,6 +696,7 @@
             if (!isUserAdmin) return alert("Action non autorisée.");
 
             const semester = document.getElementById('doc-semester').value;
+            const docType = document.getElementById('doc-type').value;
             const section = document.getElementById('doc-section').value.trim() || "Divers";
             const title = document.getElementById('doc-title').value.trim();
             const desc = document.getElementById('doc-desc').value.trim();
@@ -637,6 +710,7 @@
             try {
                 await db.collection("documents").add({
                     semester: semester,
+                    type: docType, // 'cours' ou 'exam'
                     section: section,
                     title: title,
                     description: desc || "Support académique",
@@ -669,25 +743,29 @@
             db.collection("documents").orderBy("createdAt", "desc").get().then((querySnapshot) => {
                 allDocuments = [];
                 querySnapshot.forEach((docSnap) => {
-                    allDocuments.push({ id: docSnap.id, ...docSnap.data() });
+                    const data = docSnap.data();
+                    // Compatibilité avec les anciens documents sans le champ 'type'
+                    if (!data.type) data.type = 'cours'; 
+                    allDocuments.push({ id: docSnap.id, ...data });
                 });
-                renderActiveSemester();
+                renderActiveView();
             });
         }
 
-        // Affiche les documents groupés par section pour le semestre actif
-        function renderActiveSemester() {
+        // Filtre et affiche les documents selon le semestre et le type actifs
+        function renderActiveView() {
             const container = document.getElementById('semester-content');
-            const docsInSemester = allDocuments.filter(d => d.semester === activeSemester);
+            const filteredDocs = allDocuments.filter(d => d.semester === activeSemester && d.type === activeType);
 
-            if (docsInSemester.length === 0) {
-                container.innerHTML = `<p style="color:#6b7280; text-align:center; padding: 2rem;">Aucun document disponible pour le Semestre ${activeSemester.replace('S', '')}.</p>`;
+            if (filteredDocs.length === 0) {
+                const labelType = activeType === 'cours' ? 'de cours' : "d'anciens sujets";
+                container.innerHTML = `<p style="color:#6b7280; text-align:center; padding: 2rem;">Aucun document ${labelType} disponible pour le Semestre ${activeSemester.replace('S', '')}.</p>`;
                 return;
             }
 
-            // Grouper par section
+            // Grouper par section / matière
             const sectionsMap = {};
-            docsInSemester.forEach(doc => {
+            filteredDocs.forEach(doc => {
                 const sec = doc.section || "Général";
                 if (!sectionsMap[sec]) sectionsMap[sec] = [];
                 sectionsMap[sec].push(doc);
