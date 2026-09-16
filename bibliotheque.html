@@ -117,6 +117,37 @@
 
         .container { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
 
+        /* --- Barre de Recherche --- */
+        .search-bar-container {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.9rem 1rem 0.9rem 3rem;
+            border: 2px solid #d1d5db;
+            border-radius: 50px;
+            font-size: 1rem;
+            outline: none;
+            transition: 0.2s;
+            background: white;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 4px 6px rgba(16, 185, 129, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1.2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            font-size: 1.1rem;
+        }
+
         .semesters-nav {
             display: flex;
             gap: 8px;
@@ -296,6 +327,12 @@
             </div>
         </div>
 
+        <!-- BARRE DE RECHERCHE -->
+        <div class="search-bar-container">
+            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+            <input type="text" id="search-input" class="search-input" placeholder="Rechercher un cours, une matière, un examen (ex: Hydraulique)..." oninput="handleSearch(this.value)">
+        </div>
+
         <div class="semesters-nav">
             <button class="semester-btn active" onclick="switchSemester('S1')">Semestre 1</button>
             <button class="semester-btn" onclick="switchSemester('S2')">Semestre 2</button>
@@ -308,7 +345,7 @@
             <button class="semester-btn" onclick="switchSemester('S9')">Semestre 9</button>
         </div>
 
-        <div class="type-selector">
+        <div class="type-selector" id="type-selector-container">
             <button class="type-btn active cours" id="btn-type-cours" onclick="switchDocType('cours')">
                 <i class="fa-solid fa-book-open"></i> Cours & Supports
             </button>
@@ -390,12 +427,13 @@
         let isUserAdmin = false;
         let activeSemester = 'S5';
         let activeType = 'cours';
+        let searchQuery = '';
         let allDocuments = [];
 
         document.addEventListener('DOMContentLoaded', () => {
             updateCartCount();
             fetchAllDocuments();
-            loadSettings(); // Charge le logo depuis Firestore
+            loadSettings();
 
             auth.onAuthStateChanged((user) => {
                 const adminPanel = document.getElementById('admin-panel');
@@ -417,7 +455,6 @@
             });
         });
 
-        // --- GESTION DU LOGO GLOBAL ---
         function loadSettings() {
             db.collection("settings").doc("general").get().then((doc) => {
                 if (doc.exists && doc.data().logoFileId) {
@@ -428,6 +465,10 @@
         }
 
         window.switchSemester = function(sem) {
+            // Effacer la recherche si on clique sur un semestre pour revenir à la normale
+            document.getElementById('search-input').value = '';
+            searchQuery = '';
+            
             activeSemester = sem;
             document.querySelectorAll('.semester-btn').forEach(btn => {
                 btn.classList.remove('active');
@@ -438,6 +479,9 @@
         };
 
         window.switchDocType = function(type) {
+            document.getElementById('search-input').value = '';
+            searchQuery = '';
+
             activeType = type;
             const btnCours = document.getElementById('btn-type-cours');
             const btnExams = document.getElementById('btn-type-exams');
@@ -453,7 +497,17 @@
             renderActiveView();
         };
 
+        // --- GESTION DE LA RECHERCHE INSTANTANÉE ---
+        window.handleSearch = function(query) {
+            searchQuery = query.trim().toLowerCase();
+            renderActiveView();
+        };
+
         function updateTitle() {
+            if (searchQuery) {
+                document.getElementById('current-section-title').innerText = `Résultats de recherche pour "${searchQuery}"`;
+                return;
+            }
             const semNum = activeSemester.replace('S', '');
             const typeLabel = activeType === 'cours' ? 'Cours & Supports' : 'Anciens Sujets & Examens';
             document.getElementById('current-section-title').innerText = `Semestre ${semNum} - ${typeLabel}`;
@@ -557,17 +611,36 @@
 
         function renderActiveView() {
             const container = document.getElementById('semester-content');
-            const filteredDocs = allDocuments.filter(d => d.semester === activeSemester && d.type === activeType);
+            let filteredDocs = [];
+
+            // Si l'utilisateur tape dans la barre de recherche
+            if (searchQuery) {
+                filteredDocs = allDocuments.filter(d => 
+                    d.title.toLowerCase().includes(searchQuery) ||
+                    (d.section && d.section.toLowerCase().includes(searchQuery)) ||
+                    (d.description && d.description.toLowerCase().includes(searchQuery)) ||
+                    d.semester.toLowerCase().includes(searchQuery)
+                );
+                updateTitle();
+            } else {
+                updateTitle();
+                filteredDocs = allDocuments.filter(d => d.semester === activeSemester && d.type === activeType);
+            }
 
             if (filteredDocs.length === 0) {
-                const labelType = activeType === 'cours' ? 'de cours' : "d'anciens sujets";
-                container.innerHTML = `<p style="color:#6b7280; text-align:center; padding: 2rem;">Aucun document ${labelType} disponible pour le Semestre ${activeSemester.replace('S', '')}.</p>`;
+                if (searchQuery) {
+                    container.innerHTML = `<p style="color:#6b7280; text-align:center; padding: 2rem;">Aucun document trouvé pour "${searchQuery}".</p>`;
+                } else {
+                    const labelType = activeType === 'cours' ? 'de cours' : "d'anciens sujets";
+                    container.innerHTML = `<p style="color:#6b7280; text-align:center; padding: 2rem;">Aucun document ${labelType} disponible pour le Semestre ${activeSemester.replace('S', '')}.</p>`;
+                }
                 return;
             }
 
             const sectionsMap = {};
             filteredDocs.forEach(doc => {
-                const sec = doc.section || "Général";
+                // Si on recherche, on groupe par Semestre ou Section pour plus de clarté
+                const sec = searchQuery ? `[${doc.semester}] ${doc.section || "Général"}` : (doc.section || "Général");
                 if (!sectionsMap[sec]) sectionsMap[sec] = [];
                 sectionsMap[sec].push(doc);
             });
@@ -733,7 +806,6 @@
 
             message += `*TOTAL GLOBAL : ${grandTotal} FCFA*\n\nMerci de valider ma commande.`;
 
-            // Mise à jour du numéro WhatsApp de commande ici
             const phoneNumber = "22650989590";
             window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
         };
