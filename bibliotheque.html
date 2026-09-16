@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DIGI-PRINT 2iE - 100% Gratuit & Cloud</title>
+    <title>DIGI-PRINT 2iE - Gestion Cloud Automatisée</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Firebase Firestore uniquement (Pas de Storage payant) -->
+    <!-- Firebase Firestore pour la base de données -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <style>
@@ -176,7 +176,7 @@
             background: var(--primary-dark);
         }
 
-        /* Panneau Admin */
+        /* Panneau Admin (Caché par défaut) */
         .admin-panel {
             background: white;
             border-radius: 10px;
@@ -321,15 +321,17 @@
 
     <div class="container">
         
-        <!-- ESPACE ADMINISTRATEUR (Ajout via Lien Google Drive / GitHub) -->
+        <!-- ESPACE ADMIN : UPLOAD DIRECT SUR LE CLOUD -->
         <div class="admin-panel" id="admin-panel">
-            <h2 class="section-title" style="margin-bottom:1rem;">Ajouter un document (Gratuit via Base Firestore)</h2>
+            <h2 class="section-title" style="margin-bottom:1rem;">Uploader un fichier sur le Cloud</h2>
             <div class="admin-form">
-                <input type="text" id="doc-title" placeholder="Titre du cours (ex: Cours Solaire PV)">
+                <input type="text" id="doc-title" placeholder="Titre du document (ex: Cours Solaire PV)">
                 <textarea id="doc-desc" placeholder="Courte description..."></textarea>
-                <input type="number" id="doc-pages" placeholder="Nombre de pages par défaut (ex: 35)">
-                <input type="text" id="doc-url" placeholder="Lien direct du fichier (Google Drive ou GitHub)">
-                <button class="btn btn-primary" onclick="addDocumentToFirestore()">Enregistrer dans la base</button>
+                <input type="number" id="doc-pages" placeholder="Nombre de pages estimé (ex: 30)">
+                <label style="font-weight:600;">Sélectionner le fichier (PDF, Word, etc.) : 
+                    <input type="file" id="doc-file" style="margin-top:5px;">
+                </label>
+                <button class="btn btn-primary" id="upload-btn" onclick="uploadFileAndSave()">Envoyer dans le Cloud & Publier</button>
             </div>
         </div>
 
@@ -363,7 +365,7 @@
     </div>
 
     <script>
-        // CONFIGURATION FIREBASE (Firestore est entièrement gratuit sur le forfait Spark / de base)
+        // CONFIGURATION FIREBASE (Firestore Database)
         const firebaseConfig = {
             apiKey: "TON_API_KEY",
             authDomain: "ton-projet.firebaseapp.com",
@@ -375,6 +377,11 @@
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
+
+        // CONFIGURATION CLOUDINARY (Pour l'hébergement gratuit des fichiers)
+        // Crée un compte gratuit sur cloudinary.com, récupère ton "cloud_name" et ton "upload_preset" (mode unsigned)
+        const CLOUDINARY_CLOUD_NAME = "TON_CLOUD_NAME";
+        const CLOUDINARY_UPLOAD_PRESET = "TON_UPLOAD_PRESET";
 
         const RATES = {
             'nb_verso': 15,
@@ -395,40 +402,72 @@
             panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
         }
 
-        // Ajouter un document (seulement du texte et un lien, pas de stockage payant)
-        async function addDocumentToFirestore() {
+        // Fonction magique : Upload automatique sur Cloudinary + Sauvegarde des infos sur Firebase
+        async function uploadFileAndSave() {
             const title = document.getElementById('doc-title').value;
             const desc = document.getElementById('doc-desc').value;
             const pages = parseInt(document.getElementById('doc-pages').value) || 1;
-            const fileUrl = document.getElementById('doc-url').value;
+            const fileInput = document.getElementById('doc-file');
+            const uploadBtn = document.getElementById('upload-btn');
 
-            if (!title || !fileUrl) {
-                alert("Veuillez remplir le titre et le lien du fichier !");
+            if (!title || fileInput.files.length === 0) {
+                alert("Veuillez entrer un titre et sélectionner un fichier !");
                 return;
             }
 
+            const file = fileInput.files[0];
+            uploadBtn.innerText = "Envoi en cours vers le cloud...";
+            uploadBtn.disabled = true;
+
+            // Préparation de l'envoi vers Cloudinary
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+
             try {
+                // 1. Envoi du fichier à l'API Cloudinary
+                const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/upload`, {
+                    method: "POST",
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (!data.secure_url) {
+                    throw new Error("Erreur lors de l'upload vers Cloudinary");
+                }
+
+                const fileUrl = data.secure_url;
+                const fileName = file.name;
+
+                // 2. Enregistrement des informations et du lien direct dans Firestore
                 await db.collection("documents").add({
                     title: title,
                     description: desc,
                     pages: pages,
+                    fileName: fileName,
                     fileUrl: fileUrl,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
-                alert("Document ajouté à la base de données avec succès !");
+                alert("Fichier envoyé et publié avec succès !");
                 document.getElementById('doc-title').value = '';
                 document.getElementById('doc-desc').value = '';
                 document.getElementById('doc-pages').value = '';
-                document.getElementById('doc-url').value = '';
+                document.getElementById('doc-file').value = '';
                 toggleAdminPanel();
                 loadDocumentsFromFirestore();
+
             } catch (error) {
-                console.error("Erreur : ", error);
-                alert("Erreur lors de l'enregistrement.");
+                console.error("Erreur :", error);
+                alert("Une erreur est survenue lors de l'envoi du fichier.");
+            } finally {
+                uploadBtn.innerText = "Envoyer dans le Cloud & Publier";
+                uploadBtn.disabled = false;
             }
         }
 
+        // Charger les documents depuis Firebase
         function loadDocumentsFromFirestore() {
             const grid = document.getElementById('firebase-docs-grid');
             
@@ -446,7 +485,9 @@
                             <div>
                                 <h3>${data.title}</h3>
                                 <p>${data.description || 'Support académique 2iE'}</p>
-                                <span style="font-size:0.8rem; color:#059669; font-weight:bold;">${data.pages} pages</span>
+                                <div style="font-size:0.8rem; color:#059669; font-weight:bold; margin-bottom:5px;">
+                                    <i class="fa-solid fa-file-lines"></i> ${data.fileName || 'Document'} (${data.pages} pages)
+                                </div>
                             </div>
                             <div class="card-actions" style="margin-top:1rem;">
                                 <a href="${data.fileUrl}" class="btn btn-outline" target="_blank" download><i class="fa-solid fa-download"></i></a>
@@ -458,11 +499,11 @@
                 grid.innerHTML = html;
             }).catch((error) => {
                 console.error("Erreur de chargement : ", error);
-                grid.innerHTML = `<p style="color:red;">Erreur de connexion à Firebase Firestore.</p>`;
+                grid.innerHTML = `<p style="color:red;">Erreur de connexion à Firebase.</p>`;
             });
         }
 
-        // Fonctions du Panier
+        // Gestion du Panier
         function saveCart() {
             localStorage.setItem('digiprint_cart', JSON.stringify(cart));
         }
@@ -587,7 +628,7 @@
                 const itemTotal = calculateItemPrice(item);
                 grandTotal += itemTotal;
                 message += `${idx + 1}. *${item.name}* (Qté: ${item.qty})\n`;
-                message += `   - Pages : ${item.pages} | Format : ${item.printMode}\n`;
+                message += `   - Pages : ${item.pages} | Format : ${item.printNode}\n`;
                 message += `   - Sous-total : ${itemTotal} FCFA\n\n`;
             });
 
