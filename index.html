@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIGI-PRINT 2iE - Accueil & Services</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --dark: #1f2937;
+            --light: #f3f4f6;
+            --whatsapp: #25d366;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--dark), #111827);
+            color: white;
+            padding: 1.2rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        header h1 {
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        header h1 span {
+            color: var(--primary);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: 0.2s;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--primary);
+        }
+
+        .cart-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+        }
+
+        .cart-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .hero {
+            background: linear-gradient(rgba(31, 41, 55, 0.85), rgba(17, 24, 39, 0.85)), url('https://images.unsplash.com/photo-1562654501-a0ccc0fc3fb1?auto=format&fit=crop&w=1200&q=80');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            text-align: center;
+            padding: 5rem 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .hero h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            color: #d1d5db;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto 3rem auto;
+            padding: 0 1rem;
+        }
+
+        h2.section-title {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--dark);
+            border-left: 5px solid var(--primary);
+            padding-left: 10px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+        }
+
+        .card h3 {
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+        }
+
+        .card p {
+            color: #6b7280;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .price-tag {
+            font-weight: bold;
+            color: var(--primary-dark);
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.6rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-align: center;
+            text-decoration: none;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+            background: var(--primary);
+            color: white;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Modal Panier */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 10px;
+            padding: 2rem;
+            max-height: 85vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6b7280;
+        }
+
+        .cart-items-list {
+            margin: 1.5rem 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .cart-item {
+            background: var(--light);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .cart-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cart-item-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+
+        .cart-item-controls select {
+            padding: 4px;
+            border-radius: 4px;
+            border: 1px solid #d1d5db;
+        }
+
+        .cart-total {
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-align: right;
+            margin: 1rem 0;
+        }
+
+        .btn-whatsapp {
+            background: var(--whatsapp);
+            color: white;
+            width: 100%;
+            padding: 0.8rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            transition: 0.3s;
+        }
+
+        .btn-whatsapp:hover {
+            background: #1ebd58;
+        }
+
+        .badge {
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 0.75rem;
+            vertical-align: top;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1><i class="fa-solid fa-print"></i> DIGI-<span>PRINT</span></h1>
+        <div class="nav-links">
+            <a href="index.html" class="active">Vitrine & Services</a>
+            <a href="bibliotheque.html">Bibliothèque 2iE</a>
+            <button class="cart-btn" onclick="openCart()">
+                <i class="fa-solid fa-cart-shopping"></i> Panier <span id="cart-count" class="badge">0</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="hero">
+        <h2>Votre imprimerie rapide au campus 2iE Kamboinsé</h2>
+        <p>Impression de documents, reliures de rapports PFE, plastifications et accès direct à vos cours en un clic.</p>
+        <a href="bibliotheque.html" class="btn" style="display:inline-block; width:auto; padding:0.8rem 2rem;"><i class="fa-solid fa-book">}}</i> Accéder à la Bibliothèque</a>
+    </div>
+
+    <div class="container">
+        <section>
+            <h2 class="section-title">Nos Prestations & Tarifs</h2>
+            <div class="grid">
+                <div class="card">
+                    <div>
+                        <h3>Impression & Photocopies Standard</h3>
+                        <p>Impression haute vitesse N&B ou Couleur sur papier de qualité.</p>
+                        <span class="price-tag">À partir de 15 FCFA / page</span>
+                    </div>
+                    <button class="btn" onclick="addToCart('Impression Standard', 25, 'service')"><i class="fa-solid fa-plus"></i> Commander</button>
+                </div>
+                <div class="card">
+                    <div>
+                        <h3>Reliure de Rapports & PFE</h3>
+                        <p>Reliure spirale solide et élégante pour mémoires et projets académiques.</p>
+                        <span class="price-tag">500 FCFA / unité</span>
+                    </div>
+                    <button class="btn" onclick="addToCart('Reliure de Rapport (PFE)', 500, 'service')"><i class="fa-solid fa-plus"></i> Ajouter au panier</button>
+                </div>
+                <div class="card">
+                    <div>
+                        <h3>Plastification A4 / A5</h3>
+                        <p>Protection étanche pour cartes d'étudiant, badges et documents importants.</p>
+                        <span class="price-tag">200 FCFA / page</span>
+                    </div>
+                    <button class="btn" onclick="addToCart('Plastification A4', 200, 'service')"><i class="fa-solid fa-plus"></i> Ajouter au panier</button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- MODAL PANIER -->
+    <div class="modal" id="cart-modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeCart()">&times;</span>
+            <h2>Votre Panier d'Impression</h2>
+            
+            <div class="cart-items-list" id="cart-items-container">
+                <p style="text-align: center; color: #6b7280;">Votre panier est vide.</p>
+            </div>
+
+            <div class="cart-total">
+                Total estimé : <span id="cart-total-price">0</span> FCFA
+            </div>
+
+            <button class="btn-whatsapp" onclick="checkoutWhatsApp()">
+                <i class="fa-brands fa-whatsapp fa-lg"></i> Envoyer la commande sur WhatsApp
+            </button>
+        </div>
+    </div>
+
+    <script src="cart.js"></script>
+</body>
+</html>
