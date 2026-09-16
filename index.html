@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DIGI-PRINT 2iE - Bibliothèque sécurisée</title>
+    <title>DIGI-PRINT 2iE - Bibliothèque S1 à S9</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Firebase SDK (App, Auth, Firestore) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -102,15 +102,56 @@
             padding: 0 1rem;
         }
 
+        /* Barre de navigation des Semestres (S1 à S9) */
+        .semesters-nav {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            margin-bottom: 2rem;
+            scrollbar-width: thin;
+        }
+
+        .semester-btn {
+            background: white;
+            border: 1px solid #d1d5db;
+            color: var(--dark);
+            padding: 0.6rem 1.2rem;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            white-space: nowrap;
+            transition: 0.2s;
+        }
+
+        .semester-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .semester-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
         h2.section-title {
-            font-size: 1.8rem;
-            margin-bottom: 1.5rem;
+            font-size: 1.6rem;
+            margin: 2rem 0 1rem 0;
             color: var(--dark);
             border-left: 5px solid var(--primary);
             padding-left: 10px;
         }
 
-        /* Panneau Admin & Connexion */
+        h3.subsection-title {
+            font-size: 1.2rem;
+            margin: 1.5rem 0 0.8rem 0;
+            color: #4b5563;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 5px;
+        }
+
+        /* Panneau Admin */
         .admin-panel {
             background: white;
             border-radius: 10px;
@@ -127,7 +168,7 @@
             max-width: 600px;
         }
 
-        .admin-form input, .admin-form textarea {
+        .admin-form input, .admin-form textarea, .admin-form select {
             padding: 0.8rem;
             border: 1px solid #d1d5db;
             border-radius: 6px;
@@ -168,7 +209,7 @@
             height: 32px;
             border-radius: 50%;
             cursor: pointer;
-            display: none; /* Affiché uniquement si connecté */
+            display: none;
             justify-content: center;
             align-items: center;
             font-size: 0.9rem;
@@ -194,10 +235,10 @@
             margin-top: -45px;
         }
 
-        .card h3 {
+        .card h4 {
             margin-bottom: 0.4rem;
             color: var(--dark);
-            font-size: 1.1rem;
+            font-size: 1.05rem;
         }
 
         .card p {
@@ -248,7 +289,7 @@
             background: var(--primary-dark);
         }
 
-        /* Fenêtre Modale Aperçu & Connexion Admin */
+        /* Modales */
         .modal {
             display: none;
             position: fixed;
@@ -376,7 +417,7 @@
 <body>
 
     <header>
-        <h1><i class="fa-solid fa-print"></i> DIGI-<span>PRINT</span> (Bibliothèque 2iE)</h1>
+        <h1><i class="fa-solid fa-print"></i> DIGI-<span>PRINT</span> (2iE)</h1>
         <div class="header-actions">
             <button class="btn-admin" onclick="handleAdminClick()"><i class="fa-solid fa-lock" id="admin-icon"></i> <span id="admin-btn-text">Admin</span></button>
             <button class="cart-btn" onclick="openCart()">
@@ -387,14 +428,26 @@
 
     <div class="container">
         
-        <!-- ESPACE ADMIN (Visible uniquement si connecté) -->
+        <!-- ESPACE ADMIN -->
         <div class="admin-panel" id="admin-panel">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                <h2 class="section-title" style="margin-bottom:0; border-left:none; padding-left:0;">Ajouter un document (Admin)</h2>
+                <h2 class="section-title" style="margin:0; border-left:none; padding-left:0;">Ajouter un document (Admin)</h2>
                 <button class="btn btn-outline" onclick="logoutAdmin()" style="font-size: 0.75rem; color: var(--danger); border-color: var(--danger);"><i class="fa-solid fa-right-from-bracket"></i> Déconnexion</button>
             </div>
             <div class="admin-form">
-                <input type="text" id="doc-title" placeholder="Titre du cours (ex: Électrotechnique S5)">
+                <select id="doc-semester">
+                    <option value="S1">Semestre 1 (S1)</option>
+                    <option value="S2">Semestre 2 (S2)</option>
+                    <option value="S3">Semestre 3 (S3)</option>
+                    <option value="S4">Semestre 4 (S4)</option>
+                    <option value="S5" selected>Semestre 5 (S5)</option>
+                    <option value="S6">Semestre 6 (S6)</option>
+                    <option value="S7">Semestre 7 (S7)</option>
+                    <option value="S8">Semestre 8 (S8)</option>
+                    <option value="S9">Semestre 9 (S9)</option>
+                </select>
+                <input type="text" id="doc-section" placeholder="Nom de la section / du cours (ex: Électrotechnique)">
+                <input type="text" id="doc-title" placeholder="Titre du document (ex: Cours Chapitre 1)">
                 <textarea id="doc-desc" placeholder="Courte description..."></textarea>
                 <input type="number" id="doc-pages" placeholder="Nombre de pages estimé (ex: 30)">
                 <input type="text" id="doc-link" placeholder="Lien de partage Google Drive ou ID du fichier">
@@ -402,19 +455,33 @@
             </div>
         </div>
 
+        <!-- NAVIGATION DES SEMESTRES (S1 à S9) -->
+        <div class="semesters-nav">
+            <button class="semester-btn active" onclick="switchSemester('S1')">Semestre 1</button>
+            <button class="semester-btn" onclick="switchSemester('S2')">Semestre 2</button>
+            <button class="semester-btn" onclick="switchSemester('S3')">Semestre 3</button>
+            <button class="semester-btn" onclick="switchSemester('S4')">Semestre 4</button>
+            <button class="semester-btn" onclick="switchSemester('S5')">Semestre 5</button>
+            <button class="semester-btn" onclick="switchSemester('S6')">Semestre 6</button>
+            <button class="semester-btn" onclick="switchSemester('S7')">Semestre 7</button>
+            <button class="semester-btn" onclick="switchSemester('S8')">Semestre 8</button>
+            <button class="semester-btn" onclick="switchSemester('S9')">Semestre 9</button>
+        </div>
+
+        <!-- CONTENEUR DES COURS DU SEMESTRE ACTIF -->
         <section>
-            <h2 class="section-title">Cours, Rapports & Supports 2iE</h2>
-            <div class="grid" id="documents-grid">
-                <p style="color:#6b7280; text-align:center; grid-column:1/-1;">Chargement des documents...</p>
+            <h2 class="section-title" id="current-semester-title">Semestre 5</h2>
+            <div id="semester-content">
+                <p style="color:#6b7280; text-align:center;">Chargement des cours...</p>
             </div>
         </section>
     </div>
 
-    <!-- MODAL DE CONNEXION ADMIN -->
+    <!-- MODAL CONNEXION -->
     <div class="modal" id="login-modal">
         <div class="modal-content">
             <span class="close-modal" onclick="closeLoginModal()">&times;</span>
-            <h2 style="margin-bottom: 1.2rem; color: var(--dark); font-size: 1.3rem;"><i class="fa-solid fa-lock"></i> Connexion Administrateur</h2>
+            <h2 style="margin-bottom: 1.2rem; color: var(--dark); font-size: 1.3rem;"><i class="fa-solid fa-lock"></i> Connexion Admin</h2>
             <div style="display: grid; gap: 1rem;">
                 <input type="email" id="admin-email" placeholder="Email administrateur" style="padding: 0.8rem; border: 1px solid #d1d5db; border-radius: 6px; width: 100%;">
                 <input type="password" id="admin-password" placeholder="Mot de passe" style="padding: 0.8rem; border: 1px solid #d1d5db; border-radius: 6px; width: 100%;">
@@ -423,7 +490,7 @@
         </div>
     </div>
 
-    <!-- MODAL APERÇU COMPLET -->
+    <!-- MODAL APERÇU -->
     <div class="modal" id="preview-modal">
         <div class="preview-modal-content">
             <span class="close-modal" onclick="closePreview()">&times;</span>
@@ -459,7 +526,7 @@
             projectId: "digiprint-97475",
             storageBucket: "digiprint-97475.firebasestorage.app",
             messagingSenderId: "114042323466",
-            appId: "1:114042323466:web:ac887afc5f3d7dbc0555f3",
+            appId: "1:638135682946:web:ac887afc5f3d7dbc0555f3",
             measurementId: "G-MHDN4WNH7K"
         };
 
@@ -476,12 +543,13 @@
 
         let cart = JSON.parse(localStorage.getItem('digiprint_cart')) || [];
         let isUserAdmin = false;
+        let activeSemester = 'S5'; // Semestre affiché par défaut
+        let allDocuments = []; // Cache local des documents
 
         document.addEventListener('DOMContentLoaded', () => {
             updateCartCount();
-            loadDocuments();
+            fetchAllDocuments();
 
-            // Vérifie en direct si l'admin est déjà connecté dans le navigateur
             auth.onAuthStateChanged((user) => {
                 const adminPanel = document.getElementById('admin-panel');
                 const adminBtnText = document.getElementById('admin-btn-text');
@@ -498,11 +566,21 @@
                     adminIcon.className = "fa-solid fa-lock";
                     adminPanel.style.display = 'none';
                 }
-                loadDocuments(); // Recharge pour afficher/masquer les boutons corbeille
+                renderActiveSemester();
             });
         });
 
-        // Gestion du clic sur le bouton Admin de l'en-tête
+        // Changement de semestre par les onglets
+        window.switchSemester = function(sem) {
+            activeSemester = sem;
+            document.querySelectorAll('.semester-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if(btn.innerText.includes(sem)) btn.classList.add('active');
+            });
+            document.getElementById('current-semester-title').innerText = `Semestre ${sem.replace('S', '')}`;
+            renderActiveSemester();
+        };
+
         window.handleAdminClick = function() {
             if (isUserAdmin) {
                 const panel = document.getElementById('admin-panel');
@@ -516,166 +594,149 @@
             document.getElementById('login-modal').style.display = 'none';
         };
 
-        // Connexion Admin via Firebase Auth
         window.loginAdmin = async function() {
             const email = document.getElementById('admin-email').value.trim();
             const password = document.getElementById('admin-password').value.trim();
-
-            if (!email || !password) {
-                alert("Veuillez remplir l'email et le mot de passe !");
-                return;
-            }
-
             try {
                 await auth.signInWithEmailAndPassword(email, password);
-                alert("Connexion administrateur réussie !");
+                alert("Connexion réussie !");
                 document.getElementById('admin-email').value = '';
                 document.getElementById('admin-password').value = '';
                 closeLoginModal();
             } catch (error) {
-                console.error("Erreur de connexion :", error);
-                alert("Identifiants incorrects ou accès refusé : " + error.message);
+                alert("Erreur de connexion : " + error.message);
             }
         };
 
-        // Déconnexion Admin
         window.logoutAdmin = async function() {
-            try {
-                await auth.signOut();
-                alert("Vous êtes déconnecté.");
-            } catch (error) {
-                console.error("Erreur de déconnexion", error);
-            }
+            await auth.signOut();
+            alert("Déconnecté.");
         };
 
         function extractDriveId(input) {
             input = input.trim();
             const match = input.match(/\/d\/([a-zA-Z0-9_-]+)/);
-            if (match && match[1]) {
-                return match[1];
-            }
+            if (match && match[1]) return match[1];
             return input;
         }
 
         window.addNewDocument = async function() {
-            if (!isUserAdmin) {
-                alert("Action non autorisée.");
-                return;
-            }
+            if (!isUserAdmin) return alert("Action non autorisée.");
 
+            const semester = document.getElementById('doc-semester').value;
+            const section = document.getElementById('doc-section').value.trim() || "Divers";
             const title = document.getElementById('doc-title').value.trim();
             const desc = document.getElementById('doc-desc').value.trim();
             const pages = parseInt(document.getElementById('doc-pages').value) || 1;
             const rawLink = document.getElementById('doc-link').value.trim();
 
-            if (!title || !rawLink) {
-                alert("Veuillez renseigner le titre et le lien Google Drive !");
-                return;
-            }
+            if (!title || !rawLink) return alert("Veuillez remplir le titre et le lien !");
 
             const fileId = extractDriveId(rawLink);
 
             try {
                 await db.collection("documents").add({
+                    semester: semester,
+                    section: section,
                     title: title,
-                    description: desc || "Support académique 2iE",
+                    description: desc || "Support académique",
                     pages: pages,
                     fileId: fileId,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
-                alert("Document publié avec succès sur le site !");
+                alert("Document publié avec succès !");
                 document.getElementById('doc-title').value = '';
+                document.getElementById('doc-section').value = '';
                 document.getElementById('doc-desc').value = '';
                 document.getElementById('doc-pages').value = '';
                 document.getElementById('doc-link').value = '';
-                loadDocuments();
+                fetchAllDocuments();
             } catch (error) {
-                console.error("Erreur d'ajout : ", error);
-                alert("Erreur lors de l'enregistrement : " + error.message);
+                alert("Erreur : " + error.message);
             }
         };
 
         window.deleteDocument = async function(docId, title) {
-            if (!isUserAdmin) {
-                alert("Action non autorisée.");
-                return;
-            }
-
-            if (confirm(`Voulez-vous vraiment supprimer "${title}" de la bibliothèque ?`)) {
-                try {
-                    await db.collection("documents").doc(docId).delete();
-                    alert("Document supprimé avec succès !");
-                    loadDocuments();
-                } catch (error) {
-                    console.error("Erreur de suppression : ", error);
-                    alert("Erreur lors de la suppression du document.");
-                }
+            if (!isUserAdmin) return;
+            if (confirm(`Supprimer "${title}" ?`)) {
+                await db.collection("documents").doc(docId).delete();
+                fetchAllDocuments();
             }
         };
 
-        function loadDocuments() {
-            const grid = document.getElementById('documents-grid');
-
+        function fetchAllDocuments() {
             db.collection("documents").orderBy("createdAt", "desc").get().then((querySnapshot) => {
-                if (querySnapshot.empty) {
-                    grid.innerHTML = `<p style="color:#6b7280; text-align:center; grid-column:1/-1;">Aucun document disponible pour le moment.</p>`;
-                    return;
-                }
-
-                let html = '';
+                allDocuments = [];
                 querySnapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
-                    const docId = docSnap.id;
+                    allDocuments.push({ id: docSnap.id, ...docSnap.data() });
+                });
+                renderActiveSemester();
+            });
+        }
+
+        // Affiche les documents groupés par section pour le semestre actif
+        function renderActiveSemester() {
+            const container = document.getElementById('semester-content');
+            const docsInSemester = allDocuments.filter(d => d.semester === activeSemester);
+
+            if (docsInSemester.length === 0) {
+                container.innerHTML = `<p style="color:#6b7280; text-align:center; padding: 2rem;">Aucun document disponible pour le Semestre ${activeSemester.replace('S', '')}.</p>`;
+                return;
+            }
+
+            // Grouper par section
+            const sectionsMap = {};
+            docsInSemester.forEach(doc => {
+                const sec = doc.section || "Général";
+                if (!sectionsMap[sec]) sectionsMap[sec] = [];
+                sectionsMap[sec].push(doc);
+            });
+
+            let html = '';
+            for (const [sectionName, docs] of Object.entries(sectionsMap)) {
+                html += `<h3 class="subsection-title"><i class="fa-solid fa-folder-open" style="color:var(--primary)"></i> ${sectionName}</h3>`;
+                html += `<div class="grid">`;
+
+                docs.forEach(data => {
                     const safeTitle = data.title.replace(/'/g, "\\'");
-                    
-                    // Affiche le bouton corbeille uniquement si l'admin est connecté
                     const deleteDisplay = isUserAdmin ? 'flex' : 'none';
-                    
+
                     html += `
                         <div class="card">
-                            <button class="btn-delete-card" style="display: ${deleteDisplay};" onclick="deleteDocument('${docId}', '${safeTitle}')" title="Supprimer ce document">
+                            <button class="btn-delete-card" style="display: ${deleteDisplay};" onclick="deleteDocument('${data.id}', '${safeTitle}')" title="Supprimer">
                                 <i class="fa-solid fa-trash-can"></i>
                             </button>
-
                             <div class="card-thumbnail">
                                 <iframe src="https://drive.google.com/file/d/${data.fileId}/preview"></iframe>
                             </div>
                             <div>
-                                <h3>${data.title}</h3>
+                                <h4>${data.title}</h4>
                                 <p>${data.description}</p>
                                 <span style="font-size:0.8rem; color:#059669; font-weight:bold;">Estimé à ${data.pages} pages</span>
                             </div>
                             <div class="card-actions" style="margin-top:1rem;">
                                 <button class="btn btn-outline" onclick="openPreview('${data.fileId}', '${safeTitle}')"><i class="fa-solid fa-eye"></i> Zoom</button>
                                 <a href="https://drive.google.com/uc?export=download&id=${data.fileId}" class="btn btn-outline" target="_blank"><i class="fa-solid fa-download"></i> Télécharger</a>
-                                <button class="btn-primary btn" onclick="addToCart('${safeTitle}', 'doc', ${data.pages})"><i class="fa-solid fa-print"></i> Imprimer en 1 clic</button>
+                                <button class="btn-primary btn" onclick="addToCart('${safeTitle}', 'doc', ${data.pages})"><i class="fa-solid fa-print"></i> Imprimer</button>
                             </div>
                         </div>
                     `;
                 });
-                grid.innerHTML = html;
-            }).catch((error) => {
-                console.error("Erreur de chargement : ", error);
-                grid.innerHTML = `<p style="color:red; text-align:center; grid-column:1/-1;">Erreur de chargement des documents.</p>`;
-            });
+                html += `</div>`;
+            }
+            container.innerHTML = html;
         }
 
         window.openPreview = function(fileId, title) {
-            const modal = document.getElementById('preview-modal');
-            const iframe = document.getElementById('preview-iframe');
-            const titleEl = document.getElementById('preview-title');
-
-            titleEl.innerText = `Aperçu : ${title}`;
-            iframe.src = `https://drive.google.com/file/d/${fileId}/preview`;
-            modal.style.display = 'flex';
+            document.getElementById('preview-title').innerText = `Aperçu : ${title}`;
+            document.getElementById('preview-iframe').src = `https://drive.google.com/file/d/${fileId}/preview`;
+            document.getElementById('preview-modal').style.display = 'flex';
         };
 
         window.closePreview = function() {
-            const modal = document.getElementById('preview-modal');
-            const iframe = document.getElementById('preview-iframe');
-            modal.style.display = 'none';
-            iframe.src = "";
+            document.getElementById('preview-modal').style.display = 'none';
+            document.getElementById('preview-iframe').src = "";
         };
 
         function saveCart() {
@@ -693,21 +754,14 @@
 
         window.addToCart = function(name, type, defaultPages = 1) {
             const existingIndex = cart.findIndex(item => item.name === name);
-            
             if (existingIndex > -1) {
                 cart[existingIndex].qty += 1;
             } else {
-                cart.push({
-                    name: name,
-                    type: type,
-                    qty: 1,
-                    pages: defaultPages,
-                    printMode: 'nb_recto_verso'
-                });
+                cart.push({ name: name, type: type, qty: 1, pages: defaultPages, printMode: 'nb_recto_verso' });
             }
             saveCart();
             updateCartCount();
-            alert(`"${name}" a été ajouté à votre panier !`);
+            alert(`"${name}" ajouté au panier !`);
         };
 
         function updateCartCount() {
@@ -724,13 +778,9 @@
         };
 
         window.updateItemOption = function(index, field, value) {
-            if (field === 'printMode') {
-                cart[index].printMode = value;
-            } else if (field === 'qty') {
-                cart[index].qty = parseInt(value) || 1;
-            } else if (field === 'pages') {
-                cart[index].pages = parseInt(value) || 1;
-            }
+            if (field === 'printMode') cart[index].printMode = value;
+            else if (field === 'qty') cart[index].qty = parseInt(value) || 1;
+            else if (field === 'pages') cart[index].pages = parseInt(value) || 1;
             saveCart();
             renderCart();
         };
@@ -743,7 +793,6 @@
         function renderCart() {
             const container = document.getElementById('cart-items-container');
             const totalPriceEl = document.getElementById('cart-total-price');
-            
             if (!container) return;
 
             if (cart.length === 0) {
@@ -789,18 +838,14 @@
         }
 
         window.checkoutWhatsApp = function() {
-            if (cart.length === 0) {
-                alert("Votre panier est vide !");
-                return;
-            }
+            if (cart.length === 0) return alert("Panier vide !");
 
             let message = "Bonjour DIGI-PRINT 👋, je souhaite commander :\n\n";
-            let grandTotal, itemTotal;
-            grandTotal = 0;
+            let grandTotal = 0;
 
             cart.forEach((item, idx) => {
                 const itemTitle = item.name.replace(/\\'/g, "'");
-                itemTotal = calculateItemPrice(item);
+                const itemTotal = calculateItemPrice(item);
                 grandTotal += itemTotal;
                 message += `${idx + 1}. *${itemTitle}* (Qté: ${item.qty})\n`;
                 message += `   - Pages : ${item.pages} | Format : ${item.printMode}\n`;
@@ -809,10 +854,8 @@
 
             message += `*TOTAL GLOBAL : ${grandTotal} FCFA*\n\nMerci de valider ma commande.`;
 
-            const phoneNumber = "22600000000"; // Remplace par ton numéro WhatsApp pro
-            const encodedMessage = encodeURIComponent(message);
-            
-            window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, '_blank');
+            const phoneNumber = "22600000000"; // Ton numéro WhatsApp pro
+            window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
         };
     </script>
 </body>
