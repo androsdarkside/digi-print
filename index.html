@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DIGI-PRINT 2iE - Bibliothèque dynamique Google Drive</title>
+    <title>DIGI-PRINT 2iE - Bibliothèque dynamique</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Firebase Firestore SDK (Compat v9/v10) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -108,7 +108,7 @@
             padding-left: 10px;
         }
 
-        /* Panneau Admin (Caché par défaut) */
+        /* Panneau Admin */
         .admin-panel {
             background: white;
             border-radius: 10px;
@@ -141,7 +141,7 @@
         .card {
             background: white;
             border-radius: 10px;
-            padding: 1.5rem;
+            padding: 1.2rem;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             display: flex;
             flex-direction: column;
@@ -154,15 +154,35 @@
             box-shadow: 0 10px 15px rgba(0,0,0,0.08);
         }
 
+        /* Miniature de la première page intégrée dans la carte */
+        .card-thumbnail {
+            width: 100%;
+            height: 160px;
+            background: #e5e7eb;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+            position: relative;
+            pointer-events: none; /* Empêche les interactions directes pour garder un design propre */
+        }
+
+        .card-thumbnail iframe {
+            width: 100%;
+            height: 250px;
+            border: none;
+            margin-top: -45px; /* Centre visuellement la première page */
+        }
+
         .card h3 {
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.4rem;
             color: var(--dark);
+            font-size: 1.1rem;
         }
 
         .card p {
             color: #6b7280;
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
+            font-size: 0.85rem;
+            margin-bottom: 0.8rem;
         }
 
         .card-actions {
@@ -173,12 +193,12 @@
         }
 
         .btn {
-            padding: 0.6rem;
+            padding: 0.5rem;
             border: none;
             border-radius: 6px;
             cursor: pointer;
             font-weight: 600;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             text-align: center;
             text-decoration: none;
             display: inline-flex;
@@ -207,7 +227,7 @@
             background: var(--primary-dark);
         }
 
-        /* Fenêtre Modale Aperçu */
+        /* Fenêtre Modale Aperçu complet */
         .modal {
             display: none;
             position: fixed;
@@ -349,7 +369,7 @@
 
     <div class="container">
         
-        <!-- ESPACE ADMIN POUR AJOUTER UN COURS DIRECTEMENT -->
+        <!-- ESPACE ADMIN -->
         <div class="admin-panel" id="admin-panel">
             <h2 class="section-title" style="margin-bottom:1rem;">Ajouter un document (via lien Google Drive)</h2>
             <div class="admin-form">
@@ -369,7 +389,7 @@
         </section>
     </div>
 
-    <!-- MODAL APERÇU -->
+    <!-- MODAL APERÇU COMPLET -->
     <div class="modal" id="preview-modal">
         <div class="preview-modal-content">
             <span class="close-modal" onclick="closePreview()">&times;</span>
@@ -399,14 +419,13 @@
     </div>
 
     <script>
-        // CONFIGURATION FIREBASE (Mise à jour avec ton nouveau projet digiprint-97475)
         const firebaseConfig = {
             apiKey: "AIzaSyCrIZrJYKf2q5nqXQaDpDKIfgFR3tuWfOw",
             authDomain: "digiprint-97475.firebaseapp.com",
             projectId: "digiprint-97475",
             storageBucket: "digiprint-97475.firebasestorage.app",
             messagingSenderId: "114042323466",
-            appId: "1:114042323466:web:ac887afc5f3d7dbc0555f3",
+            appId: "1:638135682946:web:ac887afc5f3d7dbc0555f3",
             measurementId: "G-MHDN4WNH7K"
         };
 
@@ -492,13 +511,17 @@
                     
                     html += `
                         <div class="card">
+                            <!-- Aperçu miniature automatique de la première page -->
+                            <div class="card-thumbnail">
+                                <iframe src="https://drive.google.com/file/d/${data.fileId}/preview"></iframe>
+                            </div>
                             <div>
                                 <h3>${data.title}</h3>
                                 <p>${data.description}</p>
                                 <span style="font-size:0.8rem; color:#059669; font-weight:bold;">Estimé à ${data.pages} pages</span>
                             </div>
                             <div class="card-actions" style="margin-top:1rem;">
-                                <button class="btn btn-outline" onclick="openPreview('${data.fileId}', '${safeTitle}')"><i class="fa-solid fa-eye"></i> Aperçu</button>
+                                <button class="btn btn-outline" onclick="openPreview('${data.fileId}', '${safeTitle}')"><i class="fa-solid fa-eye"></i> Zoom</button>
                                 <a href="https://drive.google.com/uc?export=download&id=${data.fileId}" class="btn btn-outline" target="_blank"><i class="fa-solid fa-download"></i> Télécharger</a>
                                 <button class="btn btn-primary" onclick="addToCart('${safeTitle}', 'doc', ${data.pages})"><i class="fa-solid fa-print"></i> Imprimer en 1 clic</button>
                             </div>
@@ -531,10 +554,6 @@
 
         function saveCart() {
             localStorage.setItem('digiprint_cart', JSON.stringify(cart));
-        }
-
-        window.openCardModal = function() { // Anciennement openCart
-            // ...
         }
 
         window.openCart = function() {
@@ -645,7 +664,7 @@
 
         window.checkoutWhatsApp = function() {
             if (cart.length === 0) {
-                alert("Votre panier est vide !");
+                alert("Website vide !");
                 return;
             }
 
@@ -653,16 +672,17 @@
             let grandTotal = 0;
 
             cart.forEach((item, idx) => {
+                const itemTitle = item.name.replace(/\\'/g, "'");
                 const itemTotal = calculateItemPrice(item);
                 grandTotal += itemTotal;
-                message += `${idx + 1}. *${item.name}* (Qté: ${item.qty})\n`;
+                message += `${idx + 1}. *${itemTitle}* (Qté: ${item.qty})\n`;
                 message += `   - Pages : ${item.pages} | Format : ${item.printMode}\n`;
                 message += `   - Sous-total : ${itemTotal} FCFA\n\n`;
             });
 
             message += `*TOTAL GLOBAL : ${grandTotal} FCFA*\n\nMerci de valider ma commande.`;
 
-            const phoneNumber = "22600000000"; // Pense à mettre ton numéro WhatsApp ici
+            const phoneNumber = "22600000000"; // Ton numéro WhatsApp
             const encodedMessage = encodeURIComponent(message);
             
             window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, '_blank');
