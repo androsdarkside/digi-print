@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DIGI-PRINT 2iE - Bibliothèque dynamique Google Drive</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Firebase Firestore SDK (Gratuit pour la base de données) -->
-    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-compat.js"></script>
+    <!-- Firebase Firestore SDK (Compat v9/v10) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <style>
         :root {
             --primary: #10b981;
@@ -399,16 +399,15 @@
     </div>
 
     <script>
-        // CONFIGURATION FIREBASE (Utilise tes codes Firebase Firestore récupérés plus tôt)
+        // CONFIGURATION FIREBASE (Mise à jour avec ton nouveau projet digiprint-97475)
         const firebaseConfig = {
-            apiKey: "AIzaSyAJar3VAm2herR7Y870iie9JJkI3eVEeOU",
-            authDomain: "digi-print-23daa.firebaseapp.com",
-            databaseURL: "https://digi-print-23daa-default-rtdb.firebaseio.com",
-            projectId: "digi-print-23daa",
-            storageBucket: "digi-print-23daa.firebasestorage.app",
-            messagingSenderId: "638135682946",
-            appId: "1:638135682946:web:1bfa321bd9755ef6f9319b",
-            measurementId: "G-W83W105CH1"
+            apiKey: "AIzaSyCrIZrJYKf2q5nqXQaDpDKIfgFR3tuWfOw",
+            authDomain: "digiprint-97475.firebaseapp.com",
+            projectId: "digiprint-97475",
+            storageBucket: "digiprint-97475.firebasestorage.app",
+            messagingSenderId: "114042323466",
+            appId: "1:114042323466:web:ac887afc5f3d7dbc0555f3",
+            measurementId: "G-MHDN4WNH7K"
         };
 
         firebase.initializeApp(firebaseConfig);
@@ -428,25 +427,21 @@
             loadDocuments();
         });
 
-        function toggleAdminPanel() {
+        window.toggleAdminPanel = function() {
             const panel = document.getElementById('admin-panel');
             panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
-        }
+        };
 
-        // Fonction pour extraire l'ID Google Drive d'un lien complet ou direct
         function extractDriveId(input) {
             input = input.trim();
-            // Si l'utilisateur colle un lien complet type https://drive.google.com/file/d/1A2B3C.../view
             const match = input.match(/\/d\/([a-zA-Z0-9_-]+)/);
             if (match && match[1]) {
                 return match[1];
             }
-            // Sinon on considère que c'est déjà l'ID direct
             return input;
         }
 
-        // Ajouter un document depuis le panneau admin du site
-        async function addNewDocument() {
+        window.addNewDocument = async function() {
             const title = document.getElementById('doc-title').value.trim();
             const desc = document.getElementById('doc-desc').value.trim();
             const pages = parseInt(document.getElementById('doc-pages').value) || 1;
@@ -477,11 +472,10 @@
                 loadDocuments();
             } catch (error) {
                 console.error("Erreur d'ajout : ", error);
-                alert("Erreur lors de l'enregistrement.");
+                alert("Erreur lors de l'enregistrement : " + error.message);
             }
-        }
+        };
 
-        // Charger dynamiquement les documents depuis Firestore
         function loadDocuments() {
             const grid = document.getElementById('documents-grid');
 
@@ -518,8 +512,7 @@
             });
         }
 
-        // Gestion de l'Aperçu
-        function openPreview(fileId, title) {
+        window.openPreview = function(fileId, title) {
             const modal = document.getElementById('preview-modal');
             const iframe = document.getElementById('preview-iframe');
             const titleEl = document.getElementById('preview-title');
@@ -527,30 +520,33 @@
             titleEl.innerText = `Aperçu : ${title}`;
             iframe.src = `https://drive.google.com/file/d/${fileId}/preview`;
             modal.style.display = 'flex';
-        }
+        };
 
-        function closePreview() {
+        window.closePreview = function() {
             const modal = document.getElementById('preview-modal');
             const iframe = document.getElementById('preview-iframe');
             modal.style.display = 'none';
             iframe.src = "";
-        }
+        };
 
-        // Gestion du Panier
         function saveCart() {
             localStorage.setItem('digiprint_cart', JSON.stringify(cart));
         }
 
-        function openCart() {
+        window.openCardModal = function() { // Anciennement openCart
+            // ...
+        }
+
+        window.openCart = function() {
             document.getElementById('cart-modal').style.display = 'flex';
             renderCart();
-        }
+        };
 
-        function closeCart() {
+        window.closeCart = function() {
             document.getElementById('cart-modal').style.display = 'none';
-        }
+        };
 
-        function addToCart(name, type, defaultPages = 1) {
+        window.addToCart = function(name, type, defaultPages = 1) {
             const existingIndex = cart.findIndex(item => item.name === name);
             
             if (existingIndex > -1) {
@@ -567,7 +563,7 @@
             saveCart();
             updateCartCount();
             alert(`"${name}" a été ajouté à votre panier !`);
-        }
+        };
 
         function updateCartCount() {
             const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
@@ -575,14 +571,14 @@
             if (badge) badge.innerText = totalItems;
         }
 
-        function removeFromCart(index) {
+        window.removeFromCart = function(index) {
             cart.splice(index, 1);
             saveCart();
             updateCartCount();
             renderCart();
-        }
+        };
 
-        function updateItemOption(index, field, value) {
+        window.updateItemOption = function(index, field, value) {
             if (field === 'printMode') {
                 cart[index].printMode = value;
             } else if (field === 'qty') {
@@ -592,7 +588,7 @@
             }
             saveCart();
             renderCart();
-        }
+        };
 
         function calculateItemPrice(item) {
             const ratePerPage = RATES[item.printMode] || 25;
@@ -647,7 +643,7 @@
             if (totalPriceEl) totalPriceEl.innerText = grandTotal;
         }
 
-        function checkoutWhatsApp() {
+        window.checkoutWhatsApp = function() {
             if (cart.length === 0) {
                 alert("Votre panier est vide !");
                 return;
@@ -666,11 +662,11 @@
 
             message += `*TOTAL GLOBAL : ${grandTotal} FCFA*\n\nMerci de valider ma commande.`;
 
-            const phoneNumber = "22600000000"; // Remplace par ton numéro WhatsApp pro
+            const phoneNumber = "22600000000"; // Pense à mettre ton numéro WhatsApp ici
             const encodedMessage = encodeURIComponent(message);
             
             window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, '_blank');
-        }
+        };
     </script>
 </body>
 </html>
