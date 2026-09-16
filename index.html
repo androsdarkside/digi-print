@@ -28,7 +28,6 @@
             line-height: 1.6;
         }
 
-        /* En-tête / Navigation */
         header {
             background: linear-gradient(135deg, var(--dark), #111827);
             color: white;
@@ -87,7 +86,6 @@
             background: var(--primary-dark);
         }
 
-        /* Section Hero (Bannière principale) */
         .hero {
             background: linear-gradient(rgba(31, 41, 55, 0.85), rgba(17, 24, 39, 0.9)), url('https://images.unsplash.com/photo-1562654501-a0ccc0fc3fb1?auto=format&fit=crop&w=1200&q=80') center/cover;
             color: white;
@@ -150,7 +148,6 @@
             background: #1ebd58;
         }
 
-        /* Conteneur Général */
         .container {
             max-width: 1200px;
             margin: 3rem auto;
@@ -175,7 +172,6 @@
             border-radius: 2px;
         }
 
-        /* Grille des Services */
         .services-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -214,42 +210,44 @@
             font-size: 0.9rem;
         }
 
-        /* Section Tarifs */
-        .pricing-section {
-            background: white;
-            border-radius: 12px;
-            padding: 3rem 2rem;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        /* Grille des Tarifs détaillée */
+        .pricing-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
             margin-bottom: 4rem;
         }
 
-        .pricing-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 1.5rem;
-            text-align: center;
+        .price-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-top: 5px solid var(--primary);
         }
 
-        .price-box {
-            background: var(--light);
-            border-radius: 8px;
-            padding: 1.5rem;
-            border-top: 4px solid var(--primary);
+        .price-card h4 {
+            font-size: 1.3rem;
+            margin-bottom: 1.2rem;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        .price-box h5 {
-            font-size: 1rem;
-            color: #4b5563;
-            margin-bottom: 0.5rem;
+        .price-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid #f3f4f6;
+            font-size: 0.95rem;
         }
 
-        .price-box .price {
-            font-size: 1.6rem;
+        .price-item span:last-child {
             font-weight: bold;
             color: var(--primary-dark);
         }
 
-        /* Footer */
         footer {
             background: var(--dark);
             color: white;
@@ -271,18 +269,15 @@
         <div class="nav-links">
             <a href="#services">Services</a>
             <a href="#tarifs">Tarifs</a>
-            <!-- Lien direct vers la bibliothèque -->
             <a href="bibliotheque.html" class="btn-library"><i class="fa-solid fa-book-open"></i> Bibliothèque 2iE</a>
         </div>
     </header>
 
-    <!-- SECTION HERO -->
     <section class="hero">
         <h2>Impression & Services Académiques à <span>2iE</span></h2>
         <p>Gagnez du temps ! Commandez vos impressions de cours, rapports et mémoires directement en ligne ou téléchargez vos supports de S1 à S9.</p>
         <div class="hero-buttons">
             <a href="bibliotheque.html" class="btn btn-primary"><i class="fa-solid fa-book"></i> Accéder à la Bibliothèque</a>
-            <!-- Remplace 226XXXXXXXX par ton vrai numéro WhatsApp -->
             <a href="https://wa.me/22600000000?text=Bonjour%20DIGI-PRINT,%20je%20souhaite%20des%20renseignements." target="_blank" class="btn btn-whatsapp-hero">
                 <i class="fa-brands fa-whatsapp fa-lg"></i> Contactez-nous sur WhatsApp
             </a>
@@ -291,55 +286,58 @@
 
     <div class="container">
         
-        <!-- SECTION SERVICES -->
         <section id="services">
             <h3 class="section-title">Nos Services</h3>
             <div class="services-grid">
-                
                 <div class="service-card">
                     <div class="service-icon"><i class="fa-solid fa-file-pdf"></i></div>
                     <h4>Impression & Photocopies</h4>
-                    <p>Impression rapide de documents, PDF, supports de cours et examens en Noir & Blanc ou Couleur haute qualité.</p>
+                    <p>Impression rapide de documents, rapports, cours et images en Noir & Blanc ou Couleur.</p>
                 </div>
-
                 <div class="service-card">
                     <div class="service-icon"><i class="fa-solid fa-book-bookmark"></i></div>
                     <h4>Reliure & Finitions</h4>
-                    <p>Reliure spirale plastique pour vos rapports de stage, projets de fin d'études (PFE) et mémoires normés 2iE.</p>
+                    <p>Reliure spirale adaptée à toutes les volumétries de pages pour vos rapports et mémoires 2iE.</p>
                 </div>
-
                 <div class="service-card">
                     <div class="service-icon"><i class="fa-solid fa-cloud-arrow-down"></i></div>
                     <h4>Bibliothèque en Ligne</h4>
-                    <p>Accès gratuit aux cours, polycopiés et anciens sujets classés par semestre (S1 à S9) pour tous les étudiants.</p>
+                    <p>Accès gratuit aux supports de cours et anciens sujets classés par semestre (S1 à S9).</p>
                 </div>
-
             </div>
         </section>
 
-        <!-- SECTION TARIFS -->
-        <section id="tarifs" class="pricing-section">
-            <h3 class="section-title">Grille Tarifaire Indicative</h3>
-            <div class="pricing-grid">
+        <section id="tarifs">
+            <h3 class="section-title">Grille Tarifaire Officielle</h3>
+            <div class="pricing-container">
                 
-                <div class="price-box">
-                    <h5>N&B Recto Simple</h5>
-                    <div class="price">15 FCFA <span style="font-size:0.8rem; font-weight:normal;">/ page</span></div>
+                <!-- Impressions Texte -->
+                <div class="price-card">
+                    <h4><i class="fa-solid fa-file-lines" style="color:var(--primary)"></i> Impressions (Texte, Cours)</h4>
+                    <div class="price-item"><span>Noir & Blanc (Recto-verso)</span><span>15f / p.</span></div>
+                    <div class="price-item"><span>Noir & Blanc (Verso)</span><span>20f / p.</span></div>
+                    <div class="price-item"><span>Couleur (Recto-verso)</span><span>25f / p.</span></div>
+                    <div class="price-item"><span>Couleur (Verso)</span><span>50f / p.</span></div>
                 </div>
 
-                <div class="price-box">
-                    <h5>N&B Recto-Verso</h5>
-                    <div class="price">25 FCFA <span style="font-size:0.8rem; font-weight:normal;">/ page</span></div>
+                <!-- Impression d'Images -->
+                <div class="price-card">
+                    <h4><i class="fa-solid fa-image" style="color:var(--primary)"></i> Impression d'Images</h4>
+                    <div class="price-item"><span>N&B (Verso)</span><span>25f / p.</span></div>
+                    <div class="price-item"><span>N&B (Recto-verso)</span><span>20f / p.</span></div>
+                    <div class="price-item"><span>Couleur (Verso)</span><span>100f / p.</span></div>
+                    <div class="price-item"><span>Couleur (Recto-verso)</span><span>75f / p.</span></div>
+                    <div class="price-item"><span>Papier photo (N&B / Couleur)</span><span>300f / p.</span></div>
+                    <div class="price-item"><span>Papier autocollant (N&B / Couleur)</span><span>300f / p.</span></div>
                 </div>
 
-                <div class="price-box">
-                    <h5>Couleur Simple</h5>
-                    <div class="price">50 FCFA <span style="font-size:0.8rem; font-weight:normal;">/ page</span></div>
-                </div>
-
-                <div class="price-box">
-                    <h5>Couleur Recto-Verso</h5>
-                    <div class="price">90 FCFA <span style="font-size:0.8rem; font-weight:normal;">/ page</span></div>
+                <!-- Reliure -->
+                <div class="price-card" style="border-top-color: var(--dark);">
+                    <h4><i class="fa-solid fa-book" style="color:var(--dark)"></i> Reliure</h4>
+                    <div class="price-item"><span>1 à 20 pages</span><span>200f</span></div>
+                    <div class="price-item"><span>30 à 50 pages</span><span>250f</span></div>
+                    <div class="price-item"><span>60 à 100 pages</span><span>300f</span></div>
+                    <div class="price-item"><span>120 à 300 pages</span><span>350f</span></div>
                 </div>
 
             </div>

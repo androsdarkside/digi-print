@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DIGI-PRINT 2iE - Bibliothèque & Anciens Sujets S1 à S9</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Firebase SDK (App, Auth, Firestore) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
@@ -17,7 +16,7 @@
             --light: #f3f4f6;
             --whatsapp: #25d366;
             --danger: #ef4444;
-            --exam: #f59e0b; /* Couleur spécifique pour les sujets d'examens */
+            --exam: #f59e0b;
         }
 
         * {
@@ -63,6 +62,22 @@
             align-items: center;
         }
 
+        .btn-vitrine {
+            background: transparent;
+            border: 1px solid white;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .btn-vitrine:hover {
+            background: white;
+            color: var(--dark);
+        }
+
         .btn-admin {
             background: transparent;
             border: 1px solid var(--primary);
@@ -103,7 +118,6 @@
             padding: 0 1rem;
         }
 
-        /* Barre de navigation des Semestres (S1 à S9) */
         .semesters-nav {
             display: flex;
             gap: 8px;
@@ -136,7 +150,6 @@
             border-color: var(--primary);
         }
 
-        /* Sélecteur de type : Cours vs Examens */
         .type-selector {
             display: flex;
             gap: 10px;
@@ -185,7 +198,6 @@
             padding-bottom: 5px;
         }
 
-        /* Panneau Admin */
         .admin-panel {
             background: white;
             border-radius: 10px;
@@ -323,7 +335,6 @@
             background: var(--primary-dark);
         }
 
-        /* Modales */
         .modal {
             display: none;
             position: fixed;
@@ -451,8 +462,9 @@
 <body>
 
     <header>
-        <h1><i class="fa-solid fa-print"></i> DIGI-<span>PRINT</span> (2iE)</h1>
+        <h1><i class="fa-solid fa-print"></i> DIGI-<span>PRINT</span> (Bibliothèque)</h1>
         <div class="header-actions">
+            <a href="index.html" class="btn-vitrine"><i class="fa-solid fa-store"></i> Vitrine</a>
             <button class="btn-admin" onclick="handleAdminClick()"><i class="fa-solid fa-lock" id="admin-icon"></i> <span id="admin-btn-text">Admin</span></button>
             <button class="cart-btn" onclick="openCart()">
                 <i class="fa-solid fa-cart-shopping"></i> Panier <span id="cart-count" class="badge">0</span>
@@ -462,7 +474,6 @@
 
     <div class="container">
         
-        <!-- ESPACE ADMIN -->
         <div class="admin-panel" id="admin-panel">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                 <h2 class="section-title" style="margin:0; border-left:none; padding-left:0;">Ajouter un document (Admin)</h2>
@@ -485,15 +496,14 @@
                     <option value="exam">📝 Ancien Sujet / Examen</option>
                 </select>
                 <input type="text" id="doc-section" placeholder="Nom de la matière (ex: Électrotechnique)">
-                <input type="text" id="doc-title" placeholder="Titre du document (ex: Contrôle 2025 ou Chapitre 1)">
+                <input type="text" id="doc-title" placeholder="Titre du document (ex: Chapitre 1)">
                 <textarea id="doc-desc" placeholder="Courte description..."></textarea>
-                <input type="number" id="doc-pages" placeholder="Nombre de pages estimé (ex: 5)">
+                <input type="number" id="doc-pages" placeholder="Nombre de pages estimé (ex: 30)">
                 <input type="text" id="doc-link" placeholder="Lien de partage Google Drive ou ID du fichier">
                 <button class="btn btn-primary" onclick="addNewDocument()">Publier dans la bibliothèque</button>
             </div>
         </div>
 
-        <!-- NAVIGATION DES SEMESTRES (S1 à S9) -->
         <div class="semesters-nav">
             <button class="semester-btn active" onclick="switchSemester('S1')">Semestre 1</button>
             <button class="semester-btn" onclick="switchSemester('S2')">Semestre 2</button>
@@ -506,7 +516,6 @@
             <button class="semester-btn" onclick="switchSemester('S9')">Semestre 9</button>
         </div>
 
-        <!-- SÉLECTEUR DE CATÉGORIE (COURS vs ANCIENS SUJETS) -->
         <div class="type-selector">
             <button class="type-btn active cours" id="btn-type-cours" onclick="switchDocType('cours')">
                 <i class="fa-solid fa-book-open"></i> Cours & Supports
@@ -516,7 +525,6 @@
             </button>
         </div>
 
-        <!-- CONTENEUR DES COURS DU SEMESTRE ET TYPE ACTIFS -->
         <section>
             <h2 class="section-title" id="current-section-title">Semestre 5 - Cours & Supports</h2>
             <div id="semester-content">
@@ -525,7 +533,6 @@
         </section>
     </div>
 
-    <!-- MODAL CONNEXION -->
     <div class="modal" id="login-modal">
         <div class="modal-content">
             <span class="close-modal" onclick="closeLoginModal()">&times;</span>
@@ -538,7 +545,6 @@
         </div>
     </div>
 
-    <!-- MODAL APERÇU -->
     <div class="modal" id="preview-modal">
         <div class="preview-modal-content">
             <span class="close-modal" onclick="closePreview()">&times;</span>
@@ -547,7 +553,6 @@
         </div>
     </div>
 
-    <!-- MODAL PANIER -->
     <div class="modal" id="cart-modal">
         <div class="modal-content" style="max-width: 600px;">
             <span class="close-modal" onclick="closeCart()">&times;</span>
@@ -582,17 +587,18 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
+        // Nouveaux tarifs mis à jour
         const RATES = {
-            'nb_verso': 15,
-            'nb_recto_verso': 25,
-            'couleur_verso': 50,
-            'couleur_recto_verso': 90
+            'nb_recto_verso': 15,
+            'nb_verso': 20,
+            'couleur_recto_verso': 25,
+            'couleur_verso': 50
         };
 
         let cart = JSON.parse(localStorage.getItem('digiprint_cart')) || [];
         let isUserAdmin = false;
-        let activeSemester = 'S5'; // Semestre actif par défaut
-        let activeType = 'cours'; // Type actif par défaut ('cours' ou 'exam')
+        let activeSemester = 'S5';
+        let activeType = 'cours';
         let allDocuments = [];
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -619,7 +625,6 @@
             });
         });
 
-        // Changement de Semestre
         window.switchSemester = function(sem) {
             activeSemester = sem;
             document.querySelectorAll('.semester-btn').forEach(btn => {
@@ -630,7 +635,6 @@
             renderActiveView();
         };
 
-        // Changement de Type (Cours vs Anciens Sujets)
         window.switchDocType = function(type) {
             activeType = type;
             const btnCours = document.getElementById('btn-type-cours');
@@ -710,7 +714,7 @@
             try {
                 await db.collection("documents").add({
                     semester: semester,
-                    type: docType, // 'cours' ou 'exam'
+                    type: docType,
                     section: section,
                     title: title,
                     description: desc || "Support académique",
@@ -744,7 +748,6 @@
                 allDocuments = [];
                 querySnapshot.forEach((docSnap) => {
                     const data = docSnap.data();
-                    // Compatibilité avec les anciens documents sans le champ 'type'
                     if (!data.type) data.type = 'cours'; 
                     allDocuments.push({ id: docSnap.id, ...data });
                 });
@@ -752,7 +755,6 @@
             });
         }
 
-        // Filtre et affiche les documents selon le semestre et le type actifs
         function renderActiveView() {
             const container = document.getElementById('semester-content');
             const filteredDocs = allDocuments.filter(d => d.semester === activeSemester && d.type === activeType);
@@ -763,7 +765,6 @@
                 return;
             }
 
-            // Grouper par section / matière
             const sectionsMap = {};
             filteredDocs.forEach(doc => {
                 const sec = doc.section || "Général";
@@ -864,7 +865,7 @@
         };
 
         function calculateItemPrice(item) {
-            const ratePerPage = RATES[item.printMode] || 25;
+            const ratePerPage = RATES[item.printMode] || 15;
             return ratePerPage * item.pages * item.qty;
         }
 
@@ -896,10 +897,10 @@
                             <label>Pages: <input type="number" value="${item.pages}" min="1" style="width:50px;" onchange="updateItemOption(${index}, 'pages', this.value)"></label>
                             <label>Format: 
                                 <select onchange="updateItemOption(${index}, 'printMode', this.value)">
-                                    <option value="nb_verso" ${item.printMode === 'nb_verso' ? 'selected' : ''}>N&B Verso (15f)</option>
-                                    <option value="nb_recto_verso" ${item.printMode === 'nb_recto_verso' ? 'selected' : ''}>N&B Recto-Verso (25f)</option>
+                                    <option value="nb_recto_verso" ${item.printMode === 'nb_recto_verso' ? 'selected' : ''}>N&B Recto-Verso (15f)</option>
+                                    <option value="nb_verso" ${item.printMode === 'nb_verso' ? 'selected' : ''}>N&B Verso (20f)</option>
+                                    <option value="couleur_recto_verso" ${item.printMode === 'couleur_recto_verso' ? 'selected' : ''}>Couleur Recto-Verso (25f)</option>
                                     <option value="couleur_verso" ${item.printMode === 'couleur_verso' ? 'selected' : ''}>Couleur Verso (50f)</option>
-                                    <option value="couleur_recto_verso" ${item.printMode === 'couleur_recto_verso' ? 'selected' : ''}>Couleur Recto-Verso (90f)</option>
                                 </select>
                             </label>
                         </div>
