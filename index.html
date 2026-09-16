@@ -3,12 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DIGI-PRINT 2iE - Bibliothèque & Anciens Sujets S1 à S9</title>
+    <title>DIGI-PRINT 2iE - Service d'Impression & Multimédia</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Firebase SDK (App, Auth, Firestore) -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <style>
         :root {
             --primary: #10b981;
@@ -16,8 +12,6 @@
             --dark: #1f2937;
             --light: #f3f4f6;
             --whatsapp: #25d366;
-            --danger: #ef4444;
-            --exam: #f59e0b; /* Couleur spécifique pour les sujets d'examens */
         }
 
         * {
@@ -25,6 +19,7 @@
             margin: 0;
             padding: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            scroll-behavior: smooth;
         }
 
         body {
@@ -33,6 +28,7 @@
             line-height: 1.6;
         }
 
+        /* En-tête / Navigation */
         header {
             background: linear-gradient(135deg, var(--dark), #111827);
             color: white;
@@ -57,884 +53,303 @@
             color: var(--primary);
         }
 
-        .header-actions {
+        .nav-links {
             display: flex;
-            gap: 15px;
+            gap: 20px;
             align-items: center;
         }
 
-        .btn-admin {
-            background: transparent;
-            border: 1px solid var(--primary);
-            color: var(--primary);
-            padding: 0.5rem 1rem;
-            border-radius: 50px;
-            cursor: pointer;
+        .nav-links a {
+            color: white;
+            text-decoration: none;
             font-weight: 600;
             transition: 0.2s;
         }
 
-        .btn-admin:hover {
-            background: var(--primary);
-            color: white;
+        .nav-links a:hover {
+            color: var(--primary);
         }
 
-        .cart-btn {
+        .btn-library {
             background: var(--primary);
             color: white;
-            border: none;
-            padding: 0.5rem 1rem;
+            padding: 0.5rem 1.2rem;
             border-radius: 50px;
-            cursor: pointer;
+            text-decoration: none;
             font-weight: bold;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 8px;
             transition: 0.3s;
         }
 
-        .cart-btn:hover {
+        .btn-library:hover {
             background: var(--primary-dark);
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 1rem;
+        /* Section Hero (Bannière principale) */
+        .hero {
+            background: linear-gradient(rgba(31, 41, 55, 0.85), rgba(17, 24, 39, 0.9)), url('https://images.unsplash.com/photo-1562654501-a0ccc0fc3fb1?auto=format&fit=crop&w=1200&q=80') center/cover;
+            color: white;
+            text-align: center;
+            padding: 5rem 1rem;
         }
 
-        /* Barre de navigation des Semestres (S1 à S9) */
-        .semesters-nav {
-            display: flex;
-            gap: 8px;
-            overflow-x: auto;
-            padding-bottom: 10px;
-            margin-bottom: 1.5rem;
-            scrollbar-width: thin;
+        .hero h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
         }
 
-        .semester-btn {
-            background: white;
-            border: 1px solid #d1d5db;
-            color: var(--dark);
-            padding: 0.6rem 1.2rem;
-            border-radius: 30px;
-            cursor: pointer;
-            font-weight: 600;
-            white-space: nowrap;
-            transition: 0.2s;
-        }
-
-        .semester-btn:hover {
-            border-color: var(--primary);
+        .hero h2 span {
             color: var(--primary);
         }
 
-        .semester-btn.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
+        .hero p {
+            font-size: 1.1rem;
+            max-width: 700px;
+            margin: 0 auto 2rem auto;
+            color: #d1d5db;
         }
 
-        /* Sélecteur de type : Cours vs Examens */
-        .type-selector {
+        .hero-buttons {
             display: flex;
-            gap: 10px;
-            margin-bottom: 2rem;
-        }
-
-        .type-btn {
-            background: white;
-            border: 2px solid #e5e7eb;
-            color: #4b5563;
-            padding: 0.5rem 1.2rem;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .type-btn.active.cours {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-
-        .type-btn.active.exams {
-            background: var(--exam);
-            color: white;
-            border-color: var(--exam);
-        }
-
-        h2.section-title {
-            font-size: 1.6rem;
-            margin: 1.5rem 0 1rem 0;
-            color: var(--dark);
-            border-left: 5px solid var(--primary);
-            padding-left: 10px;
-        }
-
-        h3.subsection-title {
-            font-size: 1.2rem;
-            margin: 1.5rem 0 0.8rem 0;
-            color: #4b5563;
-            border-bottom: 2px solid #e5e7eb;
-            padding-bottom: 5px;
-        }
-
-        /* Panneau Admin */
-        .admin-panel {
-            background: white;
-            border-radius: 10px;
-            padding: 2rem;
-            margin-bottom: 2.5rem;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            display: none;
-            border-top: 5px solid var(--dark);
-        }
-
-        .admin-form {
-            display: grid;
-            gap: 1rem;
-            max-width: 600px;
-        }
-
-        .admin-form input, .admin-form textarea, .admin-form select {
-            padding: 0.8rem;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            width: 100%;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .card {
-            background: white;
-            border-radius: 10px;
-            padding: 1.2rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            transition: transform 0.2s, box-shadow 0.2s;
-            position: relative;
-        }
-
-        .card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 15px rgba(0,0,0,0.08);
-        }
-
-        .btn-delete-card {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: var(--danger);
-            color: white;
-            border: none;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: none;
             justify-content: center;
-            align-items: center;
-            font-size: 0.9rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            z-index: 10;
-        }
-
-        .card-thumbnail {
-            width: 100%;
-            height: 160px;
-            background: #e5e7eb;
-            border-radius: 6px;
-            overflow: hidden;
-            margin-bottom: 1rem;
-            position: relative;
-            pointer-events: none;
-        }
-
-        .card-thumbnail iframe {
-            width: 100%;
-            height: 250px;
-            border: none;
-            margin-top: -45px;
-        }
-
-        .card h4 {
-            margin-bottom: 0.4rem;
-            color: var(--dark);
-            font-size: 1.05rem;
-        }
-
-        .card p {
-            color: #6b7280;
-            font-size: 0.85rem;
-            margin-bottom: 0.8rem;
-        }
-
-        .card-actions {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin-top: auto;
+            gap: 15px;
+            flex-wrap: wrap;
         }
 
         .btn {
-            padding: 0.5rem;
+            padding: 0.8rem 1.5rem;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
-            font-weight: 600;
-            font-size: 0.8rem;
-            text-align: center;
+            font-weight: bold;
+            font-size: 1rem;
             text-decoration: none;
             display: inline-flex;
-            justify-content: center;
             align-items: center;
-            gap: 5px;
-        }
-
-        .btn-outline {
-            background: transparent;
-            border: 1px solid var(--dark);
-            color: var(--dark);
-        }
-
-        .btn-outline:hover {
-            background: var(--light);
+            gap: 8px;
+            transition: 0.2s;
         }
 
         .btn-primary {
             background: var(--primary);
             color: white;
-            grid-column: 1 / -1;
         }
 
         .btn-primary:hover {
             background: var(--primary-dark);
         }
 
-        /* Modales */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.6);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .preview-modal-content {
-            background: white;
-            width: 95%;
-            max-width: 900px;
-            height: 85vh;
-            border-radius: 10px;
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
-
-        .preview-modal-content iframe {
-            width: 100%;
-            height: 100%;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            margin-top: 1rem;
-        }
-
-        .modal-content {
-            background: white;
-            width: 90%;
-            max-width: 450px;
-            border-radius: 10px;
-            padding: 2rem;
-            position: relative;
-        }
-
-        .close-modal {
-            position: absolute;
-            top: 1rem;
-            right: 1.5rem;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #6b7280;
-        }
-
-        .cart-items-list {
-            margin: 1.5rem 0;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .cart-item {
-            background: var(--light);
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .cart-item-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .cart-item-controls {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            font-size: 0.9rem;
-        }
-
-        .cart-item-controls select {
-            padding: 4px;
-            border-radius: 4px;
-            border: 1px solid #d1d5db;
-        }
-
-        .cart-total {
-            font-size: 1.2rem;
-            font-weight: bold;
-            text-align: right;
-            margin: 1rem 0;
-        }
-
-        .btn-whatsapp {
+        .btn-whatsapp-hero {
             background: var(--whatsapp);
             color: white;
-            width: 100%;
-            padding: 0.8rem;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            transition: 0.3s;
         }
 
-        .btn-whatsapp:hover {
+        .btn-whatsapp-hero:hover {
             background: #1ebd58;
         }
 
-        .badge {
-            background: #ef4444;
+        /* Conteneur Général */
+        .container {
+            max-width: 1200px;
+            margin: 3rem auto;
+            padding: 0 1rem;
+        }
+
+        h3.section-title {
+            font-size: 2rem;
+            text-align: center;
+            margin-bottom: 2.5rem;
+            color: var(--dark);
+            position: relative;
+        }
+
+        h3.section-title::after {
+            content: '';
+            display: block;
+            width: 60px;
+            height: 4px;
+            background: var(--primary);
+            margin: 0.5rem auto 0 auto;
+            border-radius: 2px;
+        }
+
+        /* Grille des Services */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .service-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+        }
+
+        .service-icon {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .service-card h4 {
+            font-size: 1.2rem;
+            margin-bottom: 0.8rem;
+            color: var(--dark);
+        }
+
+        .service-card p {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        /* Section Tarifs */
+        .pricing-section {
+            background: white;
+            border-radius: 12px;
+            padding: 3rem 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 4rem;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            text-align: center;
+        }
+
+        .price-box {
+            background: var(--light);
+            border-radius: 8px;
+            padding: 1.5rem;
+            border-top: 4px solid var(--primary);
+        }
+
+        .price-box h5 {
+            font-size: 1rem;
+            color: #4b5563;
+            margin-bottom: 0.5rem;
+        }
+
+        .price-box .price {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: var(--primary-dark);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--dark);
             color: white;
-            border-radius: 50%;
-            padding: 2px 6px;
-            font-size: 0.75rem;
-            vertical-align: top;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 4rem;
+        }
+
+        footer p {
+            color: #9ca3af;
+            font-size: 0.9rem;
         }
     </style>
 </head>
 <body>
 
     <header>
-        <h1><i class="fa-solid fa-print"></i> DIGI-<span>PRINT</span> (2iE)</h1>
-        <div class="header-actions">
-            <button class="btn-admin" onclick="handleAdminClick()"><i class="fa-solid fa-lock" id="admin-icon"></i> <span id="admin-btn-text">Admin</span></button>
-            <button class="cart-btn" onclick="openCart()">
-                <i class="fa-solid fa-cart-shopping"></i> Panier <span id="cart-count" class="badge">0</span>
-            </button>
+        <h1><i class="fa-solid fa-print"></i> DIGI-<span>PRINT</span></h1>
+        <div class="nav-links">
+            <a href="#services">Services</a>
+            <a href="#tarifs">Tarifs</a>
+            <!-- Lien direct vers la bibliothèque -->
+            <a href="bibliotheque.html" class="btn-library"><i class="fa-solid fa-book-open"></i> Bibliothèque 2iE</a>
         </div>
     </header>
 
+    <!-- SECTION HERO -->
+    <section class="hero">
+        <h2>Impression & Services Académiques à <span>2iE</span></h2>
+        <p>Gagnez du temps ! Commandez vos impressions de cours, rapports et mémoires directement en ligne ou téléchargez vos supports de S1 à S9.</p>
+        <div class="hero-buttons">
+            <a href="bibliotheque.html" class="btn btn-primary"><i class="fa-solid fa-book"></i> Accéder à la Bibliothèque</a>
+            <!-- Remplace 226XXXXXXXX par ton vrai numéro WhatsApp -->
+            <a href="https://wa.me/22600000000?text=Bonjour%20DIGI-PRINT,%20je%20souhaite%20des%20renseignements." target="_blank" class="btn btn-whatsapp-hero">
+                <i class="fa-brands fa-whatsapp fa-lg"></i> Contactez-nous sur WhatsApp
+            </a>
+        </div>
+    </section>
+
     <div class="container">
         
-        <!-- ESPACE ADMIN -->
-        <div class="admin-panel" id="admin-panel">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                <h2 class="section-title" style="margin:0; border-left:none; padding-left:0;">Ajouter un document (Admin)</h2>
-                <button class="btn btn-outline" onclick="logoutAdmin()" style="font-size: 0.75rem; color: var(--danger); border-color: var(--danger);"><i class="fa-solid fa-right-from-bracket"></i> Déconnexion</button>
-            </div>
-            <div class="admin-form">
-                <select id="doc-semester">
-                    <option value="S1">Semestre 1 (S1)</option>
-                    <option value="S2">Semestre 2 (S2)</option>
-                    <option value="S3">Semestre 3 (S3)</option>
-                    <option value="S4">Semestre 4 (S4)</option>
-                    <option value="S5" selected>Semestre 5 (S5)</option>
-                    <option value="S6">Semestre 6 (S6)</option>
-                    <option value="S7">Semestre 7 (S7)</option>
-                    <option value="S8">Semestre 8 (S8)</option>
-                    <option value="S9">Semestre 9 (S9)</option>
-                </select>
-                <select id="doc-type">
-                    <option value="cours">📚 Cours & Supports</option>
-                    <option value="exam">📝 Ancien Sujet / Examen</option>
-                </select>
-                <input type="text" id="doc-section" placeholder="Nom de la matière (ex: Électrotechnique)">
-                <input type="text" id="doc-title" placeholder="Titre du document (ex: Contrôle 2025 ou Chapitre 1)">
-                <textarea id="doc-desc" placeholder="Courte description..."></textarea>
-                <input type="number" id="doc-pages" placeholder="Nombre de pages estimé (ex: 5)">
-                <input type="text" id="doc-link" placeholder="Lien de partage Google Drive ou ID du fichier">
-                <button class="btn btn-primary" onclick="addNewDocument()">Publier dans la bibliothèque</button>
-            </div>
-        </div>
+        <!-- SECTION SERVICES -->
+        <section id="services">
+            <h3 class="section-title">Nos Services</h3>
+            <div class="services-grid">
+                
+                <div class="service-card">
+                    <div class="service-icon"><i class="fa-solid fa-file-pdf"></i></div>
+                    <h4>Impression & Photocopies</h4>
+                    <p>Impression rapide de documents, PDF, supports de cours et examens en Noir & Blanc ou Couleur haute qualité.</p>
+                </div>
 
-        <!-- NAVIGATION DES SEMESTRES (S1 à S9) -->
-        <div class="semesters-nav">
-            <button class="semester-btn active" onclick="switchSemester('S1')">Semestre 1</button>
-            <button class="semester-btn" onclick="switchSemester('S2')">Semestre 2</button>
-            <button class="semester-btn" onclick="switchSemester('S3')">Semestre 3</button>
-            <button class="semester-btn" onclick="switchSemester('S4')">Semestre 4</button>
-            <button class="semester-btn" onclick="switchSemester('S5')">Semestre 5</button>
-            <button class="semester-btn" onclick="switchSemester('S6')">Semestre 6</button>
-            <button class="semester-btn" onclick="switchSemester('S7')">Semestre 7</button>
-            <button class="semester-btn" onclick="switchSemester('S8')">Semestre 8</button>
-            <button class="semester-btn" onclick="switchSemester('S9')">Semestre 9</button>
-        </div>
+                <div class="service-card">
+                    <div class="service-icon"><i class="fa-solid fa-book-bookmark"></i></div>
+                    <h4>Reliure & Finitions</h4>
+                    <p>Reliure spirale plastique pour vos rapports de stage, projets de fin d'études (PFE) et mémoires normés 2iE.</p>
+                </div>
 
-        <!-- SÉLECTEUR DE CATÉGORIE (COURS vs ANCIENS SUJETS) -->
-        <div class="type-selector">
-            <button class="type-btn active cours" id="btn-type-cours" onclick="switchDocType('cours')">
-                <i class="fa-solid fa-book-open"></i> Cours & Supports
-            </button>
-            <button class="type-btn exams" id="btn-type-exams" onclick="switchDocType('exam')">
-                <i class="fa-solid fa-file-lines"></i> Anciens Sujets & Examens
-            </button>
-        </div>
+                <div class="service-card">
+                    <div class="service-icon"><i class="fa-solid fa-cloud-arrow-down"></i></div>
+                    <h4>Bibliothèque en Ligne</h4>
+                    <p>Accès gratuit aux cours, polycopiés et anciens sujets classés par semestre (S1 à S9) pour tous les étudiants.</p>
+                </div>
 
-        <!-- CONTENEUR DES COURS DU SEMESTRE ET TYPE ACTIFS -->
-        <section>
-            <h2 class="section-title" id="current-section-title">Semestre 5 - Cours & Supports</h2>
-            <div id="semester-content">
-                <p style="color:#6b7280; text-align:center;">Chargement des documents...</p>
             </div>
         </section>
-    </div>
 
-    <!-- MODAL CONNEXION -->
-    <div class="modal" id="login-modal">
-        <div class="modal-content">
-            <span class="close-modal" onclick="closeLoginModal()">&times;</span>
-            <h2 style="margin-bottom: 1.2rem; color: var(--dark); font-size: 1.3rem;"><i class="fa-solid fa-lock"></i> Connexion Admin</h2>
-            <div style="display: grid; gap: 1rem;">
-                <input type="email" id="admin-email" placeholder="Email administrateur" style="padding: 0.8rem; border: 1px solid #d1d5db; border-radius: 6px; width: 100%;">
-                <input type="password" id="admin-password" placeholder="Mot de passe" style="padding: 0.8rem; border: 1px solid #d1d5db; border-radius: 6px; width: 100%;">
-                <button class="btn btn-primary" onclick="loginAdmin()">Se connecter</button>
+        <!-- SECTION TARIFS -->
+        <section id="tarifs" class="pricing-section">
+            <h3 class="section-title">Grille Tarifaire Indicative</h3>
+            <div class="pricing-grid">
+                
+                <div class="price-box">
+                    <h5>N&B Recto Simple</h5>
+                    <div class="price">15 FCFA <span style="font-size:0.8rem; font-weight:normal;">/ page</span></div>
+                </div>
+
+                <div class="price-box">
+                    <h5>N&B Recto-Verso</h5>
+                    <div class="price">25 FCFA <span style="font-size:0.8rem; font-weight:normal;">/ page</span></div>
+                </div>
+
+                <div class="price-box">
+                    <h5>Couleur Simple</h5>
+                    <div class="price">50 FCFA <span style="font-size:0.8rem; font-weight:normal;">/ page</span></div>
+                </div>
+
+                <div class="price-box">
+                    <h5>Couleur Recto-Verso</h5>
+                    <div class="price">90 FCFA <span style="font-size:0.8rem; font-weight:normal;">/ page</span></div>
+                </div>
+
             </div>
-        </div>
+        </section>
+
     </div>
 
-    <!-- MODAL APERÇU -->
-    <div class="modal" id="preview-modal">
-        <div class="preview-modal-content">
-            <span class="close-modal" onclick="closePreview()">&times;</span>
-            <h3 id="preview-title" style="color: var(--dark);">Aperçu du document</h3>
-            <iframe id="preview-iframe" src=""></iframe>
-        </div>
-    </div>
+    <footer>
+        <p>&copy; 2026 DIGI-PRINT - Campus 2iE Kamboinsé. Tous droits réservés.</p>
+    </footer>
 
-    <!-- MODAL PANIER -->
-    <div class="modal" id="cart-modal">
-        <div class="modal-content" style="max-width: 600px;">
-            <span class="close-modal" onclick="closeCart()">&times;</span>
-            <h2>Votre Panier d'Impression</h2>
-            
-            <div class="cart-items-list" id="cart-items-container">
-                <p style="text-align: center; color: #6b7280;">Votre panier est vide.</p>
-            </div>
-
-            <div class="cart-total">
-                Total estimé : <span id="cart-total-price">0</span> FCFA
-            </div>
-
-            <button class="btn-whatsapp" onclick="checkoutWhatsApp()">
-                <i class="fa-brands fa-whatsapp fa-lg"></i> Envoyer la commande sur WhatsApp
-            </button>
-        </div>
-    </div>
-
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyCrIZrJYKf2q5nqXQaDpDKIfgFR3tuWfOw",
-            authDomain: "digiprint-97475.firebaseapp.com",
-            projectId: "digiprint-97475",
-            storageBucket: "digiprint-97475.firebasestorage.app",
-            messagingSenderId: "114042323466",
-            appId: "1:638135682946:web:ac887afc5f3d7dbc0555f3",
-            measurementId: "G-MHDN4WNH7K"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-
-        const RATES = {
-            'nb_verso': 15,
-            'nb_recto_verso': 25,
-            'couleur_verso': 50,
-            'couleur_recto_verso': 90
-        };
-
-        let cart = JSON.parse(localStorage.getItem('digiprint_cart')) || [];
-        let isUserAdmin = false;
-        let activeSemester = 'S5'; // Semestre actif par défaut
-        let activeType = 'cours'; // Type actif par défaut ('cours' ou 'exam')
-        let allDocuments = [];
-
-        document.addEventListener('DOMContentLoaded', () => {
-            updateCartCount();
-            fetchAllDocuments();
-
-            auth.onAuthStateChanged((user) => {
-                const adminPanel = document.getElementById('admin-panel');
-                const adminBtnText = document.getElementById('admin-btn-text');
-                const adminIcon = document.getElementById('admin-icon');
-
-                if (user) {
-                    isUserAdmin = true;
-                    adminBtnText.innerText = "Panel Admin";
-                    adminIcon.className = "fa-solid fa-unlock";
-                    adminPanel.style.display = 'block';
-                } else {
-                    isUserAdmin = false;
-                    adminBtnText.innerText = "Admin";
-                    adminIcon.className = "fa-solid fa-lock";
-                    adminPanel.style.display = 'none';
-                }
-                renderActiveView();
-            });
-        });
-
-        // Changement de Semestre
-        window.switchSemester = function(sem) {
-            activeSemester = sem;
-            document.querySelectorAll('.semester-btn').forEach(btn => {
-                btn.classList.remove('active');
-                if(btn.innerText.includes(sem)) btn.classList.add('active');
-            });
-            updateTitle();
-            renderActiveView();
-        };
-
-        // Changement de Type (Cours vs Anciens Sujets)
-        window.switchDocType = function(type) {
-            activeType = type;
-            const btnCours = document.getElementById('btn-type-cours');
-            const btnExams = document.getElementById('btn-type-exams');
-
-            if (type === 'cours') {
-                btnCours.classList.add('active', 'cours');
-                btnExams.classList.remove('active', 'exams');
-            } else {
-                btnExams.classList.add('active', 'exams');
-                btnCours.classList.remove('active', 'cours');
-            }
-            updateTitle();
-            renderActiveView();
-        };
-
-        function updateTitle() {
-            const semNum = activeSemester.replace('S', '');
-            const typeLabel = activeType === 'cours' ? 'Cours & Supports' : 'Anciens Sujets & Examens';
-            document.getElementById('current-section-title').innerText = `Semestre ${semNum} - ${typeLabel}`;
-        }
-
-        window.handleAdminClick = function() {
-            if (isUserAdmin) {
-                const panel = document.getElementById('admin-panel');
-                panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
-            } else {
-                document.getElementById('login-modal').style.display = 'flex';
-            }
-        };
-
-        window.closeLoginModal = function() {
-            document.getElementById('login-modal').style.display = 'none';
-        };
-
-        window.loginAdmin = async function() {
-            const email = document.getElementById('admin-email').value.trim();
-            const password = document.getElementById('admin-password').value.trim();
-            try {
-                await auth.signInWithEmailAndPassword(email, password);
-                alert("Connexion réussie !");
-                document.getElementById('admin-email').value = '';
-                document.getElementById('admin-password').value = '';
-                closeLoginModal();
-            } catch (error) {
-                alert("Erreur de connexion : " + error.message);
-            }
-        };
-
-        window.logoutAdmin = async function() {
-            await auth.signOut();
-            alert("Déconnecté.");
-        };
-
-        function extractDriveId(input) {
-            input = input.trim();
-            const match = input.match(/\/d\/([a-zA-Z0-9_-]+)/);
-            if (match && match[1]) return match[1];
-            return input;
-        }
-
-        window.addNewDocument = async function() {
-            if (!isUserAdmin) return alert("Action non autorisée.");
-
-            const semester = document.getElementById('doc-semester').value;
-            const docType = document.getElementById('doc-type').value;
-            const section = document.getElementById('doc-section').value.trim() || "Divers";
-            const title = document.getElementById('doc-title').value.trim();
-            const desc = document.getElementById('doc-desc').value.trim();
-            const pages = parseInt(document.getElementById('doc-pages').value) || 1;
-            const rawLink = document.getElementById('doc-link').value.trim();
-
-            if (!title || !rawLink) return alert("Veuillez remplir le titre et le lien !");
-
-            const fileId = extractDriveId(rawLink);
-
-            try {
-                await db.collection("documents").add({
-                    semester: semester,
-                    type: docType, // 'cours' ou 'exam'
-                    section: section,
-                    title: title,
-                    description: desc || "Support académique",
-                    pages: pages,
-                    fileId: fileId,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-
-                alert("Document publié avec succès !");
-                document.getElementById('doc-title').value = '';
-                document.getElementById('doc-section').value = '';
-                document.getElementById('doc-desc').value = '';
-                document.getElementById('doc-pages').value = '';
-                document.getElementById('doc-link').value = '';
-                fetchAllDocuments();
-            } catch (error) {
-                alert("Erreur : " + error.message);
-            }
-        };
-
-        window.deleteDocument = async function(docId, title) {
-            if (!isUserAdmin) return;
-            if (confirm(`Supprimer "${title}" ?`)) {
-                await db.collection("documents").doc(docId).delete();
-                fetchAllDocuments();
-            }
-        };
-
-        function fetchAllDocuments() {
-            db.collection("documents").orderBy("createdAt", "desc").get().then((querySnapshot) => {
-                allDocuments = [];
-                querySnapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
-                    // Compatibilité avec les anciens documents sans le champ 'type'
-                    if (!data.type) data.type = 'cours'; 
-                    allDocuments.push({ id: docSnap.id, ...data });
-                });
-                renderActiveView();
-            });
-        }
-
-        // Filtre et affiche les documents selon le semestre et le type actifs
-        function renderActiveView() {
-            const container = document.getElementById('semester-content');
-            const filteredDocs = allDocuments.filter(d => d.semester === activeSemester && d.type === activeType);
-
-            if (filteredDocs.length === 0) {
-                const labelType = activeType === 'cours' ? 'de cours' : "d'anciens sujets";
-                container.innerHTML = `<p style="color:#6b7280; text-align:center; padding: 2rem;">Aucun document ${labelType} disponible pour le Semestre ${activeSemester.replace('S', '')}.</p>`;
-                return;
-            }
-
-            // Grouper par section / matière
-            const sectionsMap = {};
-            filteredDocs.forEach(doc => {
-                const sec = doc.section || "Général";
-                if (!sectionsMap[sec]) sectionsMap[sec] = [];
-                sectionsMap[sec].push(doc);
-            });
-
-            let html = '';
-            for (const [sectionName, docs] of Object.entries(sectionsMap)) {
-                html += `<h3 class="subsection-title"><i class="fa-solid fa-folder-open" style="color:var(--primary)"></i> ${sectionName}</h3>`;
-                html += `<div class="grid">`;
-
-                docs.forEach(data => {
-                    const safeTitle = data.title.replace(/'/g, "\\'");
-                    const deleteDisplay = isUserAdmin ? 'flex' : 'none';
-
-                    html += `
-                        <div class="card">
-                            <button class="btn-delete-card" style="display: ${deleteDisplay};" onclick="deleteDocument('${data.id}', '${safeTitle}')" title="Supprimer">
-                                <i class="fa-solid fa-trash-can"></i>
-                            </button>
-                            <div class="card-thumbnail">
-                                <iframe src="https://drive.google.com/file/d/${data.fileId}/preview"></iframe>
-                            </div>
-                            <div>
-                                <h4>${data.title}</h4>
-                                <p>${data.description}</p>
-                                <span style="font-size:0.8rem; color:#059669; font-weight:bold;">Estimé à ${data.pages} pages</span>
-                            </div>
-                            <div class="card-actions" style="margin-top:1rem;">
-                                <button class="btn btn-outline" onclick="openPreview('${data.fileId}', '${safeTitle}')"><i class="fa-solid fa-eye"></i> Zoom</button>
-                                <a href="https://drive.google.com/uc?export=download&id=${data.fileId}" class="btn btn-outline" target="_blank"><i class="fa-solid fa-download"></i> Télécharger</a>
-                                <button class="btn-primary btn" onclick="addToCart('${safeTitle}', 'doc', ${data.pages})"><i class="fa-solid fa-print"></i> Imprimer</button>
-                            </div>
-                        </div>
-                    `;
-                });
-                html += `</div>`;
-            }
-            container.innerHTML = html;
-        }
-
-        window.openPreview = function(fileId, title) {
-            document.getElementById('preview-title').innerText = `Aperçu : ${title}`;
-            document.getElementById('preview-iframe').src = `https://drive.google.com/file/d/${fileId}/preview`;
-            document.getElementById('preview-modal').style.display = 'flex';
-        };
-
-        window.closePreview = function() {
-            document.getElementById('preview-modal').style.display = 'none';
-            document.getElementById('preview-iframe').src = "";
-        };
-
-        function saveCart() {
-            localStorage.setItem('digiprint_cart', JSON.stringify(cart));
-        }
-
-        window.openCart = function() {
-            document.getElementById('cart-modal').style.display = 'flex';
-            renderCart();
-        };
-
-        window.closeCart = function() {
-            document.getElementById('cart-modal').style.display = 'none';
-        };
-
-        window.addToCart = function(name, type, defaultPages = 1) {
-            const existingIndex = cart.findIndex(item => item.name === name);
-            if (existingIndex > -1) {
-                cart[existingIndex].qty += 1;
-            } else {
-                cart.push({ name: name, type: type, qty: 1, pages: defaultPages, printMode: 'nb_recto_verso' });
-            }
-            saveCart();
-            updateCartCount();
-            alert(`"${name}" ajouté au panier !`);
-        };
-
-        function updateCartCount() {
-            const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
-            const badge = document.getElementById('cart-count');
-            if (badge) badge.innerText = totalItems;
-        }
-
-        window.removeFromCart = function(index) {
-            cart.splice(index, 1);
-            saveCart();
-            updateCartCount();
-            renderCart();
-        };
-
-        window.updateItemOption = function(index, field, value) {
-            if (field === 'printMode') cart[index].printMode = value;
-            else if (field === 'qty') cart[index].qty = parseInt(value) || 1;
-            else if (field === 'pages') cart[index].pages = parseInt(value) || 1;
-            saveCart();
-            renderCart();
-        };
-
-        function calculateItemPrice(item) {
-            const ratePerPage = RATES[item.printMode] || 25;
-            return ratePerPage * item.pages * item.qty;
-        }
-
-        function renderCart() {
-            const container = document.getElementById('cart-items-container');
-            const totalPriceEl = document.getElementById('cart-total-price');
-            if (!container) return;
-
-            if (cart.length === 0) {
-                container.innerHTML = `<p style="text-align: center; color: #6b7280;">Votre panier est vide.</p>`;
-                if (totalPriceEl) totalPriceEl.innerText = '0';
-                return;
-            }
-
-            let html = '';
-            let grandTotal = 0;
-
-            cart.forEach((item, index) => {
-                const itemTotal = calculateItemPrice(item);
-                grandTotal += itemTotal;
-
-                html += `
-                    <div class="cart-item">
-                        <div class="cart-item-header">
-                            <strong>${item.name}</strong>
-                            <button onclick="removeFromCart(${index})" style="background:none; border:none; color:#ef4444; cursor:pointer;"><i class="fa-solid fa-trash"></i></button>
-                        </div>
-                        <div class="cart-item-controls">
-                            <label>Pages: <input type="number" value="${item.pages}" min="1" style="width:50px;" onchange="updateItemOption(${index}, 'pages', this.value)"></label>
-                            <label>Format: 
-                                <select onchange="updateItemOption(${index}, 'printMode', this.value)">
-                                    <option value="nb_verso" ${item.printMode === 'nb_verso' ? 'selected' : ''}>N&B Verso (15f)</option>
-                                    <option value="nb_recto_verso" ${item.printMode === 'nb_recto_verso' ? 'selected' : ''}>N&B Recto-Verso (25f)</option>
-                                    <option value="couleur_verso" ${item.printMode === 'couleur_verso' ? 'selected' : ''}>Couleur Verso (50f)</option>
-                                    <option value="couleur_recto_verso" ${item.printMode === 'couleur_recto_verso' ? 'selected' : ''}>Couleur Recto-Verso (90f)</option>
-                                </select>
-                            </label>
-                        </div>
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px; font-size:0.85rem;">
-                            <label>Quantité: <input type="number" value="${item.qty}" min="1" style="width:40px;" onchange="updateItemOption(${index}, 'qty', this.value)"></label>
-                            <span style="font-weight:bold; color:var(--primary-dark);">${itemTotal} FCFA</span>
-                        </div>
-                    </div>
-                `;
-            });
-
-            container.innerHTML = html;
-            if (totalPriceEl) totalPriceEl.innerText = grandTotal;
-        }
-
-        window.checkoutWhatsApp = function() {
-            if (cart.length === 0) return alert("Panier vide !");
-
-            let message = "Bonjour DIGI-PRINT 👋, je souhaite commander :\n\n";
-            let grandTotal = 0;
-
-            cart.forEach((item, idx) => {
-                const itemTitle = item.name.replace(/\\'/g, "'");
-                const itemTotal = calculateItemPrice(item);
-                grandTotal += itemTotal;
-                message += `${idx + 1}. *${itemTitle}* (Qté: ${item.qty})\n`;
-                message += `   - Pages : ${item.pages} | Format : ${item.printMode}\n`;
-                message += `   - Sous-total : ${itemTotal} FCFA\n\n`;
-            });
-
-            message += `*TOTAL GLOBAL : ${grandTotal} FCFA*\n\nMerci de valider ma commande.`;
-
-            const phoneNumber = "22600000000"; // Ton numéro WhatsApp pro
-            window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
-        };
-    </script>
 </body>
 </html>
