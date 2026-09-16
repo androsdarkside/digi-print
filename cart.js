@@ -1,12 +1,11 @@
-// Tarifs par page (en FCFA)
+// Tarifs par page mis à jour selon tes choix (en FCFA)
 const RATES = {
-    'nb_recto': 15,
-    'nb_recto_verso': 25,
-    'couleur_recto': 50,
-    'couleur_recto_verso': 90
+    'nb_verso': 15,            // Noir & Blanc Verso simple
+    'nb_recto_verso': 25,      // Noir & Blanc Recto-Verso
+    'couleur_verso': 50,       // Couleur Verso simple
+    'couleur_recto_verso': 90  // Couleur Recto-Verso
 };
 
-// Charger le panier depuis le stockage local (localStorage) pour persister entre les pages
 let cart = JSON.parse(localStorage.getItem('digiprint_cart')) || [];
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -26,7 +25,7 @@ function closeCart() {
     document.getElementById('cart-modal').style.display = 'none';
 }
 
-function addToCart(name, defaultPrice, type, defaultPages = 1) {
+function addToCart(name, defaultPrice, type, defaultPages = 1, customPrintMode = 'nb_recto_verso') {
     const existingIndex = cart.findIndex(item => item.name === name);
     
     if (existingIndex > -1) {
@@ -34,11 +33,11 @@ function addToCart(name, defaultPrice, type, defaultPages = 1) {
     } else {
         cart.push({
             name: name,
-            type: type, // 'service' ou 'doc'
+            type: type, // 'service', 'doc', ou 'custom_file'
             price: defaultPrice,
             qty: 1,
             pages: defaultPages,
-            printMode: 'nb_recto_verso' // Mode par défaut
+            printMode: customPrintMode
         });
     }
     saveCart();
@@ -107,16 +106,16 @@ function renderCart() {
                 </div>
         `;
 
-        if (item.type === 'doc') {
+        if (item.type === 'doc' || item.type === 'custom_file') {
             html += `
                 <div class="cart-item-controls">
                     <label>Pages: <input type="number" value="${item.pages}" min="1" style="width:50px;" onchange="updateItemOption(${index}, 'pages', this.value)"></label>
-                    <label>Mode: 
+                    <label>Format: 
                         <select onchange="updateItemOption(${index}, 'printMode', this.value)">
-                            <option value="nb_recto" ${item.printMode === 'nb_recto' ? 'selected' : ''}>N&B Recto</option>
-                            <option value="nb_recto_verso" ${item.printMode === 'nb_recto_verso' ? 'selected' : ''}>N&B Recto-Verso</option>
-                            <option value="couleur_recto" ${item.printMode === 'couleur_recto' ? 'selected' : ''}>Couleur Recto</option>
-                            <option value="couleur_recto_verso" ${item.printMode === 'couleur_recto_verso' ? 'selected' : ''}>Couleur Recto-Verso</option>
+                            <option value="nb_verso" ${item.printMode === 'nb_verso' ? 'selected' : ''}>N&B Verso simple (15f)</option>
+                            <option value="nb_recto_verso" ${item.printMode === 'nb_recto_verso' ? 'selected' : ''}>N&B Recto-Verso (25f)</option>
+                            <option value="couleur_verso" ${item.printMode === 'couleur_verso' ? 'selected' : ''}>Couleur Verso simple (50f)</option>
+                            <option value="couleur_recto_verso" ${item.printMode === 'couleur_recto_verso' ? 'selected' : ''}>Couleur Recto-Verso (90f)</option>
                         </select>
                     </label>
                 </div>
@@ -142,22 +141,23 @@ function checkoutWhatsApp() {
         return;
     }
 
-    let message = "Bonjour DIGI-PRINT 👋, je souhaite passer une commande :\n\n";
+    let message = "Bonjour DIGI-PRINT 👋, je souhaite passer la commande suivante :\n\n";
     let grandTotal = 0;
 
     cart.forEach((item, idx) => {
         const itemTotal = calculateItemPrice(item);
         grandTotal += itemTotal;
         message += `${idx + 1}. *${item.name}* (Qté: ${item.qty})\n`;
-        if (item.type === 'doc') {
-            message += `   - Pages: ${item.pages} | Format: ${item.printMode}\n`;
+        if (item.type === 'doc' || item.type === 'custom_file') {
+            message += `   - Nombre de pages : ${item.pages}\n`;
+            message += `   - Format d'impression : ${item.printMode}\n`;
         }
-        message += `   - Sous-total: ${itemTotal} FCFA\n\n`;
+        message += `   - Sous-total : ${itemTotal} FCFA\n\n`;
     });
 
-    message += `*TOTAL GLOBAL : ${grandTotal} FCFA*\n\nMerci de valider ma commande.`;
+    message += `*TOTAL GLOBAL : ${grandTotal} FCFA*\n\n*(Je vous envoie mes fichiers personnels en pièces jointes juste en dessous)*`;
 
-    // Remplace par ton numéro WhatsApp pro (ex: 226XXXXXXXX)
+    // Remplace par ton numéro WhatsApp professionnel
     const phoneNumber = "22600000000"; 
     const encodedMessage = encodeURIComponent(message);
     
