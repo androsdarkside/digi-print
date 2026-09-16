@@ -467,13 +467,14 @@
             return match ? match[1] : input;
         }
 
+        
         // --- GESTION DU LOGO (PARAMÈTRES GLOBAUX) ---
         function loadSettings() {
             db.collection("settings").doc("general").get().then((doc) => {
                 if (doc.exists && doc.data().logoFileId) {
                     const logoImg = document.getElementById('site-logo');
-                    // On utilise 'uc?export=view' pour récupérer l'image directe depuis Drive
-                    logoImg.src = `https://drive.google.com/uc?export=view&id=${doc.data().logoFileId}`;
+                    // NOUVEAU LIEN : Utilisation de l'API 'thumbnail' de Google Drive (beaucoup plus fiable pour les images)
+                    logoImg.src = `https://drive.google.com/thumbnail?id=${doc.data().logoFileId}&sz=w200`;
                 }
             }).catch(e => console.log("Pas de logo personnalisé trouvé."));
         }
