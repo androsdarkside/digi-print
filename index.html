@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DIGI-PRINT 2iE - Service d'Impression & Multimédia</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <style>
         :root {
             --primary: #10b981;
@@ -12,6 +15,7 @@
             --dark: #1f2937;
             --light: #f3f4f6;
             --whatsapp: #25d366;
+            --danger: #ef4444;
         }
 
         * {
@@ -28,10 +32,11 @@
             line-height: 1.6;
         }
 
+        /* --- En-tête et Logo --- */
         header {
             background: linear-gradient(135deg, var(--dark), #111827);
             color: white;
-            padding: 1.2rem 2rem;
+            padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -41,15 +46,26 @@
             z-index: 100;
         }
 
-        header h1 {
-            font-size: 1.4rem;
+        .brand-container {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+            font-size: 1.4rem;
+            font-weight: bold;
         }
 
-        header h1 span {
+        .brand-container span {
             color: var(--primary);
+        }
+
+        .site-logo {
+            height: 50px;
+            width: 50px;
+            object-fit: contain;
+            background-color: #ffffff; /* Maintient un fond blanc uni */
+            border-radius: 50%;
+            border: 2px solid var(--primary);
+            padding: 2px;
         }
 
         .nav-links {
@@ -86,6 +102,23 @@
             background: var(--primary-dark);
         }
 
+        .btn-admin {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .btn-admin:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* --- Sections standards --- */
         .hero {
             background: linear-gradient(rgba(31, 41, 55, 0.85), rgba(17, 24, 39, 0.9)), url('https://images.unsplash.com/photo-1562654501-a0ccc0fc3fb1?auto=format&fit=crop&w=1200&q=80') center/cover;
             color: white;
@@ -93,21 +126,9 @@
             padding: 5rem 1rem;
         }
 
-        .hero h2 {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .hero h2 span {
-            color: var(--primary);
-        }
-
-        .hero p {
-            font-size: 1.1rem;
-            max-width: 700px;
-            margin: 0 auto 2rem auto;
-            color: #d1d5db;
-        }
+        .hero h2 { font-size: 2.5rem; margin-bottom: 1rem; }
+        .hero h2 span { color: var(--primary); }
+        .hero p { font-size: 1.1rem; max-width: 700px; margin: 0 auto 2rem auto; color: #d1d5db; }
 
         .hero-buttons {
             display: flex;
@@ -130,29 +151,12 @@
             transition: 0.2s;
         }
 
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-whatsapp-hero { background: var(--whatsapp); color: white; }
+        .btn-whatsapp-hero:hover { background: #1ebd58; }
 
-        .btn-primary:hover {
-            background: var(--primary-dark);
-        }
-
-        .btn-whatsapp-hero {
-            background: var(--whatsapp);
-            color: white;
-        }
-
-        .btn-whatsapp-hero:hover {
-            background: #1ebd58;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 3rem auto;
-            padding: 0 1rem;
-        }
+        .container { max-width: 1200px; margin: 3rem auto; padding: 0 1rem; }
 
         h3.section-title {
             font-size: 2rem;
@@ -163,112 +167,106 @@
         }
 
         h3.section-title::after {
-            content: '';
-            display: block;
-            width: 60px;
-            height: 4px;
-            background: var(--primary);
-            margin: 0.5rem auto 0 auto;
-            border-radius: 2px;
+            content: ''; display: block; width: 60px; height: 4px;
+            background: var(--primary); margin: 0.5rem auto 0 auto; border-radius: 2px;
         }
 
-        .services-grid {
+        /* --- Espace Admin --- */
+        .admin-panel {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: none;
+            border-top: 5px solid var(--dark);
+        }
+
+        .admin-form {
+            display: grid;
+            gap: 1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .admin-form input, .admin-form textarea, .admin-form select {
+            padding: 0.8rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            width: 100%;
+        }
+        
+        .settings-divider {
+            border-top: 1px solid #e5e7eb;
+            margin: 2rem 0 1rem 0;
+            padding-top: 1rem;
+        }
+
+        /* --- Grilles et Cartes --- */
+        .gallery-grid, .services-grid, .pricing-container {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 2rem;
             margin-bottom: 4rem;
         }
 
-        .service-card {
+        .gallery-card, .service-card, .price-card {
             background: white;
             border-radius: 12px;
-            padding: 2rem;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            text-align: center;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform 0.2s;
         }
 
-        .service-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+        .gallery-card { overflow: hidden; position: relative; display: flex; flex-direction: column; }
+        .gallery-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.08); }
+        .gallery-media { width: 100%; height: 220px; background: #e5e7eb; }
+        .gallery-media iframe, .gallery-media img { width: 100%; height: 100%; object-fit: cover; border: none; }
+        .gallery-content { padding: 1.5rem; flex-grow: 1; }
+        .gallery-content h4 { color: var(--dark); font-size: 1.2rem; margin-bottom: 0.5rem; }
+        .gallery-content p { color: #6b7280; font-size: 0.95rem; }
+
+        .service-card { padding: 2rem; text-align: center; }
+        .service-icon { font-size: 2.5rem; color: var(--primary); margin-bottom: 1rem; }
+        .service-card h4 { font-size: 1.2rem; margin-bottom: 0.8rem; color: var(--dark); }
+        .service-card p { color: #6b7280; font-size: 0.9rem; }
+
+        .price-card { padding: 2rem; border-top: 5px solid var(--primary); }
+        .price-card h4 { font-size: 1.3rem; margin-bottom: 1.2rem; color: var(--dark); display: flex; align-items: center; gap: 10px; }
+        .price-item { display: flex; justify-content: space-between; padding: 0.6rem 0; border-bottom: 1px solid #f3f4f6; font-size: 0.95rem; }
+        .price-item span:last-child { font-weight: bold; color: var(--primary-dark); }
+
+        .btn-delete-card {
+            position: absolute; top: 10px; right: 10px; background: var(--danger); color: white;
+            border: none; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; display: none;
+            justify-content: center; align-items: center; font-size: 1rem; z-index: 10;
         }
 
-        .service-icon {
-            font-size: 2.5rem;
-            color: var(--primary);
-            margin-bottom: 1rem;
+        /* --- Modal Connexion --- */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 1000;
         }
+        .modal-content {
+            background: white; width: 90%; max-width: 400px; border-radius: 10px; padding: 2rem; position: relative;
+        }
+        .close-modal { position: absolute; top: 1rem; right: 1.5rem; font-size: 1.5rem; cursor: pointer; color: #6b7280; }
 
-        .service-card h4 {
-            font-size: 1.2rem;
-            margin-bottom: 0.8rem;
-            color: var(--dark);
-        }
-
-        .service-card p {
-            color: #6b7280;
-            font-size: 0.9rem;
-        }
-
-        /* Grille des Tarifs détaillée */
-        .pricing-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-bottom: 4rem;
-        }
-
-        .price-card {
-            background: white;
-            border-radius: 12px;
-            padding: 2rem;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            border-top: 5px solid var(--primary);
-        }
-
-        .price-card h4 {
-            font-size: 1.3rem;
-            margin-bottom: 1.2rem;
-            color: var(--dark);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .price-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 0.6rem 0;
-            border-bottom: 1px solid #f3f4f6;
-            font-size: 0.95rem;
-        }
-
-        .price-item span:last-child {
-            font-weight: bold;
-            color: var(--primary-dark);
-        }
-
-        footer {
-            background: var(--dark);
-            color: white;
-            text-align: center;
-            padding: 2rem;
-            margin-top: 4rem;
-        }
-
-        footer p {
-            color: #9ca3af;
-            font-size: 0.9rem;
-        }
+        footer { background: var(--dark); color: white; text-align: center; padding: 2rem; margin-top: 4rem; }
     </style>
 </head>
 <body>
 
     <header>
-        <h1><i class="fa-solid fa-print"></i> DIGI-<span>PRINT</span></h1>
+        <div class="brand-container">
+            <!-- Image du Logo dynamique -->
+            <img id="site-logo" src="https://via.placeholder.com/50?text=Logo" alt="DIGI-PRINT" class="site-logo">
+            <div>DIGI-<span>PRINT</span></div>
+        </div>
         <div class="nav-links">
+            <a href="#produits">Nos Réalisations</a>
             <a href="#services">Services</a>
             <a href="#tarifs">Tarifs</a>
+            <button class="btn-admin" onclick="handleAdminClick()"><i class="fa-solid fa-lock" id="admin-icon"></i> <span id="admin-btn-text">Admin</span></button>
             <a href="bibliotheque.html" class="btn-library"><i class="fa-solid fa-book-open"></i> Bibliothèque 2iE</a>
         </div>
     </header>
@@ -279,13 +277,49 @@
         <div class="hero-buttons">
             <a href="bibliotheque.html" class="btn btn-primary"><i class="fa-solid fa-book"></i> Accéder à la Bibliothèque</a>
             <a href="https://wa.me/22600000000?text=Bonjour%20DIGI-PRINT,%20je%20souhaite%20des%20renseignements." target="_blank" class="btn btn-whatsapp-hero">
-                <i class="fa-brands fa-whatsapp fa-lg"></i> Contactez-nous sur WhatsApp
+                <i class="fa-brands fa-whatsapp fa-lg"></i> Contactez-nous
             </a>
         </div>
     </section>
 
     <div class="container">
         
+        <!-- ESPACE ADMIN VITRINE -->
+        <div class="admin-panel" id="admin-panel">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="margin:0; font-size:1.5rem; color:var(--dark);">Gestion de la Vitrine</h3>
+                <button class="btn" style="background:transparent; color:var(--danger); border:1px solid var(--danger);" onclick="logoutAdmin()"><i class="fa-solid fa-right-from-bracket"></i> Déconnexion</button>
+            </div>
+            
+            <div class="admin-form">
+                <h4 style="color: var(--dark); margin-bottom: 0.5rem;"><i class="fa-solid fa-plus"></i> Ajouter une Réalisation</h4>
+                <select id="media-type">
+                    <option value="image">📸 Image (Lien Google Drive)</option>
+                    <option value="video">🎥 Vidéo (Lien Google Drive)</option>
+                </select>
+                <input type="text" id="media-title" placeholder="Titre du produit (ex: Reliure de Mémoire)">
+                <textarea id="media-desc" placeholder="Courte description de la réalisation..."></textarea>
+                <input type="text" id="media-link" placeholder="Lien de partage Google Drive (Image ou Vidéo)">
+                <button class="btn btn-primary" onclick="addNewMedia()" style="justify-content:center;">Publier sur la vitrine</button>
+            </div>
+
+            <!-- NOUVEAU : Changer le logo -->
+            <div class="admin-form settings-divider">
+                <h4 style="color: var(--dark); margin-bottom: 0.5rem;"><i class="fa-solid fa-gear"></i> Changer le Logo du Site</h4>
+                <input type="text" id="admin-logo-link" placeholder="Lien Google Drive de votre logo (ex: WhatsApp Image...)">
+                <button class="btn btn-outline" style="width:100%; border-color:var(--dark); color:var(--dark);" onclick="updateLogo()">Mettre à jour le logo</button>
+            </div>
+        </div>
+
+        <!-- SECTION NOS RÉALISATIONS -->
+        <section id="produits">
+            <h3 class="section-title">Nos Produits & Réalisations</h3>
+            <div class="gallery-grid" id="gallery-container">
+                <p style="color:#6b7280; text-align:center; grid-column:1/-1;">Chargement des réalisations...</p>
+            </div>
+        </section>
+
+        <!-- SECTION SERVICES -->
         <section id="services">
             <h3 class="section-title">Nos Services</h3>
             <div class="services-grid">
@@ -307,11 +341,10 @@
             </div>
         </section>
 
+        <!-- SECTION TARIFS -->
         <section id="tarifs">
             <h3 class="section-title">Grille Tarifaire Officielle</h3>
             <div class="pricing-container">
-                
-                <!-- Impressions Texte -->
                 <div class="price-card">
                     <h4><i class="fa-solid fa-file-lines" style="color:var(--primary)"></i> Impressions (Texte, Cours)</h4>
                     <div class="price-item"><span>Noir & Blanc (Recto-verso)</span><span>15f / p.</span></div>
@@ -319,19 +352,15 @@
                     <div class="price-item"><span>Couleur (Recto-verso)</span><span>25f / p.</span></div>
                     <div class="price-item"><span>Couleur (Verso)</span><span>50f / p.</span></div>
                 </div>
-
-                <!-- Impression d'Images -->
                 <div class="price-card">
                     <h4><i class="fa-solid fa-image" style="color:var(--primary)"></i> Impression d'Images</h4>
                     <div class="price-item"><span>N&B (Verso)</span><span>25f / p.</span></div>
                     <div class="price-item"><span>N&B (Recto-verso)</span><span>20f / p.</span></div>
                     <div class="price-item"><span>Couleur (Verso)</span><span>100f / p.</span></div>
                     <div class="price-item"><span>Couleur (Recto-verso)</span><span>75f / p.</span></div>
-                    <div class="price-item"><span>Papier photo (N&B / Couleur)</span><span>300f / p.</span></div>
-                    <div class="price-item"><span>Papier autocollant (N&B / Couleur)</span><span>300f / p.</span></div>
+                    <div class="price-item"><span>Papier photo (N&B/Couleur)</span><span>300f / p.</span></div>
+                    <div class="price-item"><span>Papier autocollant</span><span>300f / p.</span></div>
                 </div>
-
-                <!-- Reliure -->
                 <div class="price-card" style="border-top-color: var(--dark);">
                     <h4><i class="fa-solid fa-book" style="color:var(--dark)"></i> Reliure</h4>
                     <div class="price-item"><span>1 à 20 pages</span><span>200f</span></div>
@@ -339,15 +368,204 @@
                     <div class="price-item"><span>60 à 100 pages</span><span>300f</span></div>
                     <div class="price-item"><span>120 à 300 pages</span><span>350f</span></div>
                 </div>
-
             </div>
         </section>
 
+    </div>
+
+    <!-- MODAL DE CONNEXION -->
+    <div class="modal" id="login-modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeLoginModal()">&times;</span>
+            <h2 style="margin-bottom: 1.2rem; color: var(--dark);"><i class="fa-solid fa-lock"></i> Connexion Admin</h2>
+            <div style="display: grid; gap: 1rem;">
+                <input type="email" id="admin-email" placeholder="Email administrateur" style="padding: 0.8rem; border: 1px solid #d1d5db; border-radius: 6px; width: 100%;">
+                <input type="password" id="admin-password" placeholder="Mot de passe" style="padding: 0.8rem; border: 1px solid #d1d5db; border-radius: 6px; width: 100%;">
+                <button class="btn btn-primary" style="justify-content:center;" onclick="loginAdmin()">Se connecter</button>
+            </div>
+        </div>
     </div>
 
     <footer>
         <p>&copy; 2026 DIGI-PRINT - Campus 2iE Kamboinsé. Tous droits réservés.</p>
     </footer>
 
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCrIZrJYKf2q5nqXQaDpDKIfgFR3tuWfOw",
+            authDomain: "digiprint-97475.firebaseapp.com",
+            projectId: "digiprint-97475",
+            storageBucket: "digiprint-97475.firebasestorage.app",
+            messagingSenderId: "114042323466",
+            appId: "1:638135682946:web:ac887afc5f3d7dbc0555f3",
+            measurementId: "G-MHDN4WNH7K"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        let isUserAdmin = false;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSettings(); // Charge le logo personnalisé
+            loadGallery();
+
+            // Gestion de l'état de connexion
+            auth.onAuthStateChanged((user) => {
+                const adminPanel = document.getElementById('admin-panel');
+                const adminBtnText = document.getElementById('admin-btn-text');
+                const adminIcon = document.getElementById('admin-icon');
+
+                if (user) {
+                    isUserAdmin = true;
+                    adminBtnText.innerText = "Panel Admin";
+                    adminIcon.className = "fa-solid fa-unlock";
+                    adminPanel.style.display = 'block';
+                } else {
+                    isUserAdmin = false;
+                    adminBtnText.innerText = "Admin";
+                    adminIcon.className = "fa-solid fa-lock";
+                    adminPanel.style.display = 'none';
+                }
+                loadGallery();
+            });
+        });
+
+        // --- AUTHENTIFICATION ---
+        window.handleAdminClick = function() {
+            if (isUserAdmin) {
+                const panel = document.getElementById('admin-panel');
+                panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+            } else {
+                document.getElementById('login-modal').style.display = 'flex';
+            }
+        };
+
+        window.closeLoginModal = function() { document.getElementById('login-modal').style.display = 'none'; };
+
+        window.loginAdmin = async function() {
+            const email = document.getElementById('admin-email').value.trim();
+            const password = document.getElementById('admin-password').value.trim();
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+                alert("Connexion réussie !");
+                closeLoginModal();
+            } catch (error) {
+                alert("Erreur : " + error.message);
+            }
+        };
+
+        window.logoutAdmin = async function() {
+            await auth.signOut();
+            alert("Déconnecté.");
+        };
+
+        function extractDriveId(input) {
+            input = input.trim();
+            const match = input.match(/\/d\/([a-zA-Z0-9_-]+)/);
+            return match ? match[1] : input;
+        }
+
+        // --- GESTION DU LOGO (PARAMÈTRES GLOBAUX) ---
+        function loadSettings() {
+            db.collection("settings").doc("general").get().then((doc) => {
+                if (doc.exists && doc.data().logoFileId) {
+                    const logoImg = document.getElementById('site-logo');
+                    // On utilise 'uc?export=view' pour récupérer l'image directe depuis Drive
+                    logoImg.src = `https://drive.google.com/uc?export=view&id=${doc.data().logoFileId}`;
+                }
+            }).catch(e => console.log("Pas de logo personnalisé trouvé."));
+        }
+
+        window.updateLogo = async function() {
+            if (!isUserAdmin) return;
+            const rawLink = document.getElementById('admin-logo-link').value.trim();
+            if (!rawLink) return alert("Veuillez coller le lien Drive du logo !");
+
+            const fileId = extractDriveId(rawLink);
+
+            try {
+                // Utilisation de .set({ merge: true }) pour créer ou mettre à jour le document 'general'
+                await db.collection("settings").doc("general").set({
+                    logoFileId: fileId,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+                
+                alert("Logo mis à jour avec succès !");
+                document.getElementById('admin-logo-link').value = '';
+                loadSettings(); // Met à jour l'image en direct
+            } catch (error) {
+                alert("Erreur : " + error.message);
+            }
+        };
+
+        // --- GESTION DE LA GALERIE ---
+        window.addNewMedia = async function() {
+            if (!isUserAdmin) return;
+            const type = document.getElementById('media-type').value;
+            const title = document.getElementById('media-title').value.trim();
+            const desc = document.getElementById('media-desc').value.trim();
+            const rawLink = document.getElementById('media-link').value.trim();
+
+            if (!title || !rawLink) return alert("Le titre et le lien sont obligatoires !");
+            const fileId = extractDriveId(rawLink);
+
+            try {
+                await db.collection("gallery").add({
+                    type: type, title: title, description: desc, fileId: fileId,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                alert("Produit ajouté !");
+                document.getElementById('media-title').value = '';
+                document.getElementById('media-desc').value = '';
+                document.getElementById('media-link').value = '';
+                loadGallery();
+            } catch (error) {
+                alert("Erreur : " + error.message);
+            }
+        };
+
+        window.deleteMedia = async function(docId, title) {
+            if (!isUserAdmin) return;
+            if (confirm(`Supprimer "${title}" de la vitrine ?`)) {
+                await db.collection("gallery").doc(docId).delete();
+                loadGallery();
+            }
+        };
+
+        function loadGallery() {
+            const container = document.getElementById('gallery-container');
+            db.collection("gallery").orderBy("createdAt", "desc").get().then((querySnapshot) => {
+                if (querySnapshot.empty) {
+                    container.innerHTML = `<p style="color:#6b7280; text-align:center; grid-column:1/-1;">Aucune réalisation postée pour le moment.</p>`;
+                    return;
+                }
+                let html = '';
+                querySnapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const docId = docSnap.id;
+                    const safeTitle = data.title.replace(/'/g, "\\'");
+                    const deleteDisplay = isUserAdmin ? 'flex' : 'none';
+
+                    html += `
+                        <div class="gallery-card">
+                            <button class="btn-delete-card" style="display: ${deleteDisplay};" onclick="deleteMedia('${docId}', '${safeTitle}')" title="Supprimer">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                            <div class="gallery-media">
+                                <iframe src="https://drive.google.com/file/d/${data.fileId}/preview"></iframe>
+                            </div>
+                            <div class="gallery-content">
+                                <h4>${data.title}</h4>
+                                <p>${data.description}</p>
+                            </div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            });
+        }
+    </script>
 </body>
 </html>
