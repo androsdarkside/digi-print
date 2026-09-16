@@ -286,7 +286,6 @@
                         <span style="font-size:0.8rem; color:#059669; font-weight:bold;">Estimé à 25 pages</span>
                     </div>
                     <div class="card-actions" style="margin-top:1rem;">
-                        <!-- Remplace ID_DU_FICHIER_GOOGLE_DRIVE par l'identifiant réel de ton fichier Google Drive -->
                         <a href="https://drive.google.com/uc?export=download&id=ID_DU_FICHIER_GOOGLE_DRIVE" class="btn btn-outline" target="_blank"><i class="fa-solid fa-download"></i></a>
                         <button class="btn btn-primary" onclick="addToCart('Modèle Rapport de Stage 2iE', 'doc', 25)"><i class="fa-solid fa-print"></i> Imprimer</button>
                     </div>
@@ -343,12 +342,11 @@
     </div>
 
     <script>
-        // Tarifs par page (en FCFA)
         const RATES = {
-            'nb_verso': 15,            // Noir & Blanc Verso simple
-            'nb_recto_verso': 25,      // Noir & Blanc Recto-Verso
-            'couleur_verso': 50,       // Couleur Verso simple
-            'couleur_recto_verso': 90  // Couleur Recto-Verso
+            'nb_verso': 15,
+            'nb_recto_verso': 25,
+            'couleur_verso': 50,
+            'couleur_recto_verso': 90
         };
 
         let cart = JSON.parse(localStorage.getItem('digiprint_cart')) || [];
@@ -381,7 +379,7 @@
                     type: type,
                     qty: 1,
                     pages: defaultPages,
-                    printMode: 'nb_recto_verso' // Mode par défaut
+                    printMode: 'nb_recto_verso'
                 });
             }
             saveCart();
@@ -426,7 +424,7 @@
             if (!container) return;
 
             if (cart.length === 0) {
-                container.innerHTML = `<p style="text-align: center; color: #6b7280;">Votre panier est vide.</p>';
+                container.innerHTML = `<p style="text-align: center; color: #6b7280;">Votre panier est vide.</p>`;
                 if (totalPriceEl) totalPriceEl.innerText = '0';
                 return;
             }
