@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DIGI-PRINT 2iE - Bibliothèque Google Drive</title>
+    <title>DIGI-PRINT 2iE - Bibliothèque & Aperçu</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -117,19 +117,19 @@
         }
 
         .card-actions {
-            display: flex;
-            gap: 10px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
             margin-top: auto;
         }
 
         .btn {
-            flex: 1;
             padding: 0.6rem;
             border: none;
             border-radius: 6px;
             cursor: pointer;
             font-weight: 600;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             text-align: center;
             text-decoration: none;
             display: inline-flex;
@@ -151,13 +151,14 @@
         .btn-primary {
             background: var(--primary);
             color: white;
+            grid-column: 1 / -1; /* Le bouton imprimer prend toute la largeur */
         }
 
         .btn-primary:hover {
             background: var(--primary-dark);
         }
 
-        /* Modal Panier */
+        /* Fenêtre Modale Générique (Panier et Aperçu) */
         .modal {
             display: none;
             position: fixed;
@@ -165,7 +166,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.6);
             justify-content: center;
             align-items: center;
             z-index: 1000;
@@ -182,6 +183,27 @@
             position: relative;
         }
 
+        /* Modale spécifique pour l'aperçu du document */
+        .preview-modal-content {
+            background: white;
+            width: 95%;
+            max-width: 900px;
+            height: 85vh;
+            border-radius: 10px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .preview-modal-content iframe {
+            width: 100%;
+            height: 100%;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            margin-top: 1rem;
+        }
+
         .close-modal {
             position: absolute;
             top: 1rem;
@@ -189,6 +211,7 @@
             font-size: 1.5rem;
             cursor: pointer;
             color: #6b7280;
+            z-index: 10;
         }
 
         .cart-items-list {
@@ -282,12 +305,13 @@
                 <div class="card">
                     <div>
                         <h3>Modèle Officiel - Rapport de Stage 2iE</h3>
-                        <p>Format Word (.docx) normalisé pour la rédaction de vos mémoires et rapports.</p>
+                        <p>Format Word (.docx) normalisé pour la rédaction de vos mémoires.</p>
                         <span style="font-size:0.8rem; color:#059669; font-weight:bold;">Estimé à 25 pages</span>
                     </div>
-                    <div class="card-actions" style="margin-top:1rem;">
-                        <a href="https://drive.google.com/uc?export=download&id=ID_DU_FICHIER_GOOGLE_DRIVE" class="btn btn-outline" target="_blank"><i class="fa-solid fa-download"></i></a>
-                        <button class="btn btn-primary" onclick="addToCart('Modèle Rapport de Stage 2iE', 'doc', 25)"><i class="fa-solid fa-print"></i> Imprimer</button>
+                    <div class="card-actions">
+                        <button class="btn btn-outline" onclick="openPreview('ID_DU_FICHIER_GOOGLE_DRIVE', 'Modèle Officiel - Rapport de Stage 2iE')"><i class="fa-solid fa-eye"></i> Aperçu</button>
+                        <a href="https://drive.google.com/uc?export=download&id=ID_DU_FICHIER_GOOGLE_DRIVE" class="btn btn-outline" target="_blank"><i class="fa-solid fa-download"></i> Télécharger</a>
+                        <button class="btn btn-primary" onclick="addToCart('Modèle Rapport de Stage 2iE', 'doc', 25)"><i class="fa-solid fa-print"></i> Imprimer en 1 clic</button>
                     </div>
                 </div>
 
@@ -298,9 +322,10 @@
                         <p>Support complet de dimensionnement et d'installation des systèmes solaires.</p>
                         <span style="font-size:0.8rem; color:#059669; font-weight:bold;">Estimé à 40 pages</span>
                     </div>
-                    <div class="card-actions" style="margin-top:1rem;">
-                        <a href="https://drive.google.com/uc?export=download&id=ID_DU_FICHIER_GOOGLE_DRIVE" class="btn btn-outline" target="_blank"><i class="fa-solid fa-download"></i></a>
-                        <button class="btn btn-primary" onclick="addToCart('Cours Solaire PV (Support)', 'doc', 40)"><i class="fa-solid fa-print"></i> Imprimer</button>
+                    <div class="card-actions">
+                        <button class="btn btn-outline" onclick="openPreview('ID_DU_FICHIER_GOOGLE_DRIVE', 'Cours Solaire Photovoltaïque')"><i class="fa-solid fa-eye"></i> Aperçu</button>
+                        <a href="https://drive.google.com/uc?export=download&id=ID_DU_FICHIER_GOOGLE_DRIVE" class="btn btn-outline" target="_blank"><i class="fa-solid fa-download"></i> Télécharger</a>
+                        <button class="btn btn-primary" onclick="addToCart('Cours Solaire PV (Support)', 'doc', 40)"><i class="fa-solid fa-print"></i> Imprimer en 1 clic</button>
                     </div>
                 </div>
 
@@ -311,14 +336,24 @@
                         <p>Compilation de contrôles et examens avec corrections types.</p>
                         <span style="font-size:0.8rem; color:#059669; font-weight:bold;">Estimé à 20 pages</span>
                     </div>
-                    <div class="card-actions" style="margin-top:1rem;">
-                        <a href="https://drive.google.com/uc?export=download&id=ID_DU_FICHIER_GOOGLE_DRIVE" class="btn btn-outline" target="_blank"><i class="fa-solid fa-download"></i></a>
-                        <button class="btn btn-primary" onclick="addToCart('Sujets Automatisme & Régul', 'doc', 20)"><i class="fa-solid fa-print"></i> Imprimer</button>
+                    <div class="card-actions">
+                        <button class="btn btn-outline" onclick="openPreview('ID_DU_FICHIER_GOOGLE_DRIVE', 'Anciens Sujets - Automatisme')"><i class="fa-solid fa-eye"></i> Aperçu</button>
+                        <a href="https://drive.google.com/uc?export=download&id=ID_DU_FICHIER_GOOGLE_DRIVE" class="btn btn-outline" target="_blank"><i class="fa-solid fa-download"></i> Télécharger</a>
+                        <button class="btn btn-primary" onclick="addToCart('Sujets Automatisme & Régul', 'doc', 20)"><i class="fa-solid fa-print"></i> Imprimer en 1 clic</button>
                     </div>
                 </div>
 
             </div>
         </section>
+    </div>
+
+    <!-- MODAL APERÇU DU DOCUMENT -->
+    <div class="modal" id="preview-modal">
+        <div class="preview-modal-content">
+            <span class="close-modal" onclick="closePreview()">&times;</span>
+            <h3 id="preview-title" style="color: var(--dark);">Aperçu du document</h3>
+            <iframe id="preview-iframe" src=""></iframe>
+        </div>
     </div>
 
     <!-- MODAL PANIER -->
@@ -355,6 +390,26 @@
             updateCartCount();
         });
 
+        // Gestion de l'Aperçu
+        function openPreview(fileId, title) {
+            const modal = document.getElementById('preview-modal');
+            const iframe = document.getElementById('preview-iframe');
+            const titleEl = document.getElementById('preview-title');
+
+            titleEl.innerText = `Aperçu : ${title}`;
+            // Lien d'intégration Google Drive pour l'affichage en iframe
+            iframe.src = `https://drive.google.com/file/d/${fileId}/preview`;
+            modal.style.display = 'flex';
+        }
+
+        function closePreview() {
+            const modal = document.getElementById('preview-modal');
+            const iframe = document.getElementById('preview-iframe');
+            modal.style.display = 'none';
+            iframe.src = ""; // Vide l'iframe pour stopper la lecture/chargement
+        }
+
+        // Gestion du Panier
         function saveCart() {
             localStorage.setItem('digiprint_cart', JSON.stringify(cart));
         }
