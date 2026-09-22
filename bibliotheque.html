@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DIGI-PRINT 2iE - Bibliothèque & Anciens Sujets S1 à S9</title>
+    <title>DIGI-PRINT 2iE - Bibliothèque & Supports Académiques</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -32,7 +32,6 @@
             line-height: 1.6;
         }
 
-        /* --- En-tête et Logo --- */
         header {
             background: linear-gradient(135deg, var(--dark), #111827);
             color: white;
@@ -117,29 +116,30 @@
 
         .container { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
 
-        /* --- Barre de Recherche --- */
+        /* Barre de recherche globale */
         .search-bar-container {
-            margin-bottom: 1.5rem;
             position: relative;
+            margin-bottom: 1.5rem;
         }
 
-        .search-input {
+        .search-bar-container input {
             width: 100%;
             padding: 0.9rem 1rem 0.9rem 3rem;
-            border: 2px solid #d1d5db;
-            border-radius: 50px;
+            border: 1px solid #d1d5db;
+            border-radius: 30px;
             font-size: 1rem;
             outline: none;
-            transition: 0.2s;
             background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
 
-        .search-input:focus {
+        .search-bar-container input:focus {
             border-color: var(--primary);
-            box-shadow: 0 4px 6px rgba(16, 185, 129, 0.1);
+            box-shadow: 0 4px 8px rgba(16, 185, 129, 0.15);
         }
 
-        .search-icon {
+        .search-bar-container i {
             position: absolute;
             left: 1.2rem;
             top: 50%;
@@ -148,6 +148,31 @@
             font-size: 1.1rem;
         }
 
+        /* Sélection des Filières */
+        .filiere-nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .filiere-btn {
+            background: white;
+            border: 2px solid #d1d5db;
+            color: var(--dark);
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+            flex-grow: 1;
+            text-align: center;
+        }
+
+        .filiere-btn:hover { border-color: var(--primary); color: var(--primary); }
+        .filiere-btn.active { background: var(--dark); color: white; border-color: var(--dark); }
+
+        /* Sélection des Semestres */
         .semesters-nav {
             display: flex;
             gap: 8px;
@@ -238,44 +263,15 @@
         .btn-whatsapp:hover { background: #1ebd58; }
         .badge { background: #ef4444; color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.75rem; vertical-align: top; }
 
-        /* =========================================
-           ADAPTATION MOBILE & TABLETTE (Responsive)
-           ========================================= */
         @media (max-width: 768px) {
-            header {
-                flex-direction: column;
-                gap: 15px;
-                padding: 1rem;
-            }
-            .brand-container {
-                width: 100%;
-                justify-content: center;
-            }
-            .header-actions {
-                flex-wrap: wrap;
-                justify-content: center;
-                width: 100%;
-            }
-            .type-selector {
-                flex-direction: column;
-                width: 100%;
-            }
-            .type-selector .type-btn {
-                width: 100%;
-                justify-content: center;
-            }
-            .admin-panel {
-                padding: 1.2rem;
-            }
-            .modal-content, .preview-modal-content {
-                width: 95%;
-                padding: 1.5rem;
-            }
-            .cart-item-controls {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 8px;
-            }
+            header { flex-direction: column; gap: 15px; padding: 1rem; }
+            .brand-container { width: 100%; justify-content: center; }
+            .header-actions { flex-wrap: wrap; justify-content: center; width: 100%; }
+            .type-selector { flex-direction: column; width: 100%; }
+            .type-selector .type-btn { width: 100%; justify-content: center; }
+            .filiere-nav { flex-direction: column; }
+            .admin-panel { padding: 1.2rem; }
+            .modal-content, .preview-modal-content { width: 95%; padding: 1.5rem; }
         }
     </style>
 </head>
@@ -303,6 +299,12 @@
                 <button class="btn btn-outline" onclick="logoutAdmin()" style="font-size: 0.75rem; color: var(--danger); border-color: var(--danger);"><i class="fa-solid fa-right-from-bracket"></i> Déco</button>
             </div>
             <div class="admin-form">
+                <select id="doc-filiere">
+                    <option value="TRONC">Tronc Commun (S1 - S4)</option>
+                    <option value="GEE">GEE - Génie Électrique & Énergétique</option>
+                    <option value="GEAAH">GEAAH - Génie de l'Eau & Aménagements</option>
+                    <option value="GC-BTP">GC-BTP - Génie Civil & BTP</option>
+                </select>
                 <select id="doc-semester">
                     <option value="S1">Semestre 1 (S1)</option>
                     <option value="S2">Semestre 2 (S2)</option>
@@ -329,23 +331,24 @@
 
         <!-- BARRE DE RECHERCHE -->
         <div class="search-bar-container">
-            <i class="fa-solid fa-magnifying-glass search-icon"></i>
-            <input type="text" id="search-input" class="search-input" placeholder="Rechercher un cours, une matière, un examen (ex: Hydraulique)..." oninput="handleSearch(this.value)">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="search-input" placeholder="Rechercher un cours, une matière, un sujet d'examen..." oninput="handleSearch()">
         </div>
 
-        <div class="semesters-nav">
-            <button class="semester-btn active" onclick="switchSemester('S1')">Semestre 1</button>
-            <button class="semester-btn" onclick="switchSemester('S2')">Semestre 2</button>
-            <button class="semester-btn" onclick="switchSemester('S3')">Semestre 3</button>
-            <button class="semester-btn" onclick="switchSemester('S4')">Semestre 4</button>
-            <button class="semester-btn" onclick="switchSemester('S5')">Semestre 5</button>
-            <button class="semester-btn" onclick="switchSemester('S6')">Semestre 6</button>
-            <button class="semester-btn" onclick="switchSemester('S7')">Semestre 7</button>
-            <button class="semester-btn" onclick="switchSemester('S8')">Semestre 8</button>
-            <button class="semester-btn" onclick="switchSemester('S9')">Semestre 9</button>
+        <!-- SÉLECTION DES FILIÈRES -->
+        <div class="filiere-nav">
+            <button class="filiere-btn active" onclick="switchFiliere('TRONC')">Tronc Commun (S1-S4)</button>
+            <button class="filiere-btn" onclick="switchFiliere('GEE')">GEE (S5-S9)</button>
+            <button class="filiere-btn" onclick="switchFiliere('GEAAH')">GEAAH (S5-S9)</button>
+            <button class="filiere-btn" onclick="switchFiliere('GC-BTP')">GC-BTP (S5-S9)</button>
         </div>
 
-        <div class="type-selector" id="type-selector-container">
+        <!-- SÉLECTION DES SEMESTRES -->
+        <div class="semesters-nav" id="semesters-nav-container">
+            <!-- Généré dynamiquement selon la filière -->
+        </div>
+
+        <div class="type-selector">
             <button class="type-btn active cours" id="btn-type-cours" onclick="switchDocType('cours')">
                 <i class="fa-solid fa-book-open"></i> Cours & Supports
             </button>
@@ -355,7 +358,7 @@
         </div>
 
         <section>
-            <h2 class="section-title" id="current-section-title">Semestre 5 - Cours & Supports</h2>
+            <h2 class="section-title" id="current-section-title">Semestre 1 - Cours & Supports</h2>
             <div id="semester-content">
                 <p style="color:#6b7280; text-align:center;">Chargement des documents...</p>
             </div>
@@ -425,13 +428,14 @@
 
         let cart = JSON.parse(localStorage.getItem('digiprint_cart')) || [];
         let isUserAdmin = false;
-        let activeSemester = 'S5';
+        let activeFiliere = 'TRONC';
+        let activeSemester = 'S1';
         let activeType = 'cours';
-        let searchQuery = '';
         let allDocuments = [];
 
         document.addEventListener('DOMContentLoaded', () => {
             updateCartCount();
+            renderSemestersNav();
             fetchAllDocuments();
             loadSettings();
 
@@ -464,24 +468,53 @@
             }).catch(e => console.log("Pas de logo trouvé."));
         }
 
-        window.switchSemester = function(sem) {
-            // Effacer la recherche si on clique sur un semestre pour revenir à la normale
+        window.switchFiliere = function(filiere) {
+            activeFiliere = filiere;
+            document.querySelectorAll('.filiere-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if(btn.innerText.includes(filiere === 'TRONC' ? 'Tronc Commun' : filiere)) btn.classList.add('active');
+            });
+
+            // Définir le premier semestre par défaut selon la filière
+            if (filiere === 'TRONC') activeSemester = 'S1';
+            else activeSemester = 'S5';
+
+            renderSemestersNav();
             document.getElementById('search-input').value = '';
-            searchQuery = '';
-            
+            updateTitle();
+            renderActiveView();
+        };
+
+        function renderSemestersNav() {
+            const container = document.getElementById('semesters-nav-container');
+            let semList = [];
+
+            if (activeFiliere === 'TRONC') {
+                semList = ['S1', 'S2', 'S3', 'S4'];
+            } else {
+                semList = ['S5', 'S6', 'S7', 'S8', 'S9'];
+            }
+
+            let html = '';
+            semList.forEach(sem => {
+                const isActive = sem === activeSemester ? 'active' : '';
+                html += `<button class="semester-btn ${isActive}" onclick="switchSemester('${sem}')">Semestre ${sem.replace('S','')}</button>`;
+            });
+            container.innerHTML = html;
+        }
+
+        window.switchSemester = function(sem) {
             activeSemester = sem;
             document.querySelectorAll('.semester-btn').forEach(btn => {
                 btn.classList.remove('active');
-                if(btn.innerText.includes(sem)) btn.classList.add('active');
+                if(btn.innerText.includes(`Semestre ${sem.replace('S','')}`)) btn.classList.add('active');
             });
+            document.getElementById('search-input').value = '';
             updateTitle();
             renderActiveView();
         };
 
         window.switchDocType = function(type) {
-            document.getElementById('search-input').value = '';
-            searchQuery = '';
-
             activeType = type;
             const btnCours = document.getElementById('btn-type-cours');
             const btnExams = document.getElementById('btn-type-exams');
@@ -493,25 +526,25 @@
                 btnExams.classList.add('active', 'exams');
                 btnCours.classList.remove('active', 'cours');
             }
+            document.getElementById('search-input').value = '';
             updateTitle();
             renderActiveView();
         };
 
-        // --- GESTION DE LA RECHERCHE INSTANTANÉE ---
-        window.handleSearch = function(query) {
-            searchQuery = query.trim().toLowerCase();
-            renderActiveView();
-        };
-
         function updateTitle() {
+            const searchQuery = document.getElementById('search-input').value.trim();
             if (searchQuery) {
-                document.getElementById('current-section-title').innerText = `Résultats de recherche pour "${searchQuery}"`;
+                document.getElementById('current-section-title').innerText = `Résultats de recherche pour : "${searchQuery}"`;
                 return;
             }
             const semNum = activeSemester.replace('S', '');
             const typeLabel = activeType === 'cours' ? 'Cours & Supports' : 'Anciens Sujets & Examens';
-            document.getElementById('current-section-title').innerText = `Semestre ${semNum} - ${typeLabel}`;
+            document.getElementById('current-section-title').innerText = `[${activeFiliere}] Semestre ${semNum} - ${typeLabel}`;
         }
+
+        window.handleSearch = function() {
+            renderActiveView();
+        };
 
         window.handleAdminClick = function() {
             if (isUserAdmin) {
@@ -553,6 +586,7 @@
         window.addNewDocument = async function() {
             if (!isUserAdmin) return alert("Action non autorisée.");
 
+            const filiere = document.getElementById('doc-filiere').value;
             const semester = document.getElementById('doc-semester').value;
             const docType = document.getElementById('doc-type').value;
             const section = document.getElementById('doc-section').value.trim() || "Divers";
@@ -567,6 +601,7 @@
 
             try {
                 await db.collection("documents").add({
+                    filiere: filiere,
                     semester: semester,
                     type: docType,
                     section: section,
@@ -603,6 +638,7 @@
                 querySnapshot.forEach((docSnap) => {
                     const data = docSnap.data();
                     if (!data.type) data.type = 'cours'; 
+                    if (!data.filiere) data.filiere = 'TRONC'; // Rétrocompatibilité
                     allDocuments.push({ id: docSnap.id, ...data });
                 });
                 renderActiveView();
@@ -611,36 +647,39 @@
 
         function renderActiveView() {
             const container = document.getElementById('semester-content');
+            const searchQuery = document.getElementById('search-input').value.trim().toLowerCase();
+
             let filteredDocs = [];
 
-            // Si l'utilisateur tape dans la barre de recherche
-            if (searchQuery) {
+            if (searchQuery.length > 0) {
                 filteredDocs = allDocuments.filter(d => 
-                    d.title.toLowerCase().includes(searchQuery) ||
-                    (d.section && d.section.toLowerCase().includes(searchQuery)) ||
-                    (d.description && d.description.toLowerCase().includes(searchQuery)) ||
-                    d.semester.toLowerCase().includes(searchQuery)
+                    d.type === activeType && (
+                        d.title.toLowerCase().includes(searchQuery) || 
+                        (d.section && d.section.toLowerCase().includes(searchQuery)) ||
+                        (d.description && d.description.toLowerCase().includes(searchQuery))
+                    )
                 );
-                updateTitle();
             } else {
-                updateTitle();
-                filteredDocs = allDocuments.filter(d => d.semester === activeSemester && d.type === activeType);
+                filteredDocs = allDocuments.filter(d => d.filiere === activeFiliere && d.semester === activeSemester && d.type === activeType);
             }
 
+            updateTitle();
+
             if (filteredDocs.length === 0) {
-                if (searchQuery) {
-                    container.innerHTML = `<p style="color:#6b7280; text-align:center; padding: 2rem;">Aucun document trouvé pour "${searchQuery}".</p>`;
+                if (searchQuery.length > 0) {
+                    container.innerHTML = `<p style="color:#6b7280; text-align:center; padding: 2rem;">Aucun document ne correspond à "${searchQuery}".</p>`;
                 } else {
                     const labelType = activeType === 'cours' ? 'de cours' : "d'anciens sujets";
-                    container.innerHTML = `<p style="color:#6b7280; text-align:center; padding: 2rem;">Aucun document ${labelType} disponible pour le Semestre ${activeSemester.replace('S', '')}.</p>`;
+                    container.innerHTML = `<p style="color:#6b7280; text-align:center; padding: 2rem;">Aucun document ${labelType} disponible pour cette rubrique.</p>`;
                 }
                 return;
             }
 
             const sectionsMap = {};
             filteredDocs.forEach(doc => {
-                // Si on recherche, on groupe par Semestre ou Section pour plus de clarté
-                const sec = searchQuery ? `[${doc.semester}] ${doc.section || "Général"}` : (doc.section || "Général");
+                const secPrefix = searchQuery.length > 0 ? `[${doc.filiere} - ${doc.semester}] ` : "";
+                const sec = secPrefix + (doc.section || "Général");
+                
                 if (!sectionsMap[sec]) sectionsMap[sec] = [];
                 sectionsMap[sec].push(doc);
             });
