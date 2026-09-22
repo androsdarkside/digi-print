@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DIGI-PRINT 2iE - Bibliothèque & Supports Académiques</title>
+    <title>DIGI-PRINT 2iE - Bibliothèque, Supports & Logiciels</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -17,6 +17,7 @@
             --whatsapp: #25d366;
             --danger: #ef4444;
             --exam: #f59e0b;
+            --software: #3b82f6;
         }
 
         * {
@@ -116,7 +117,6 @@
 
         .container { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
 
-        /* Barre de recherche globale */
         .search-bar-container {
             position: relative;
             margin-bottom: 1.5rem;
@@ -148,11 +148,11 @@
             font-size: 1.1rem;
         }
 
-        /* Sélection des Filières */
+        /* Sélection des Rubriques (Filières + Logiciels) */
         .filiere-nav {
             display: flex;
             gap: 10px;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
             flex-wrap: wrap;
         }
 
@@ -171,6 +171,9 @@
 
         .filiere-btn:hover { border-color: var(--primary); color: var(--primary); }
         .filiere-btn.active { background: var(--dark); color: white; border-color: var(--dark); }
+        
+        /* Style spécifique pour le bouton Logiciels */
+        .filiere-btn.software-tab.active { background: var(--software); border-color: var(--software); }
 
         /* Sélection des Semestres */
         .semesters-nav {
@@ -228,7 +231,7 @@
         .card-thumbnail iframe { width: 100%; height: 250px; border: none; margin-top: -45px; background-color: #ffffff;}
         .card h4 { margin-bottom: 0.4rem; color: var(--dark); font-size: 1.05rem; }
         .card p { color: #6b7280; font-size: 0.85rem; margin-bottom: 0.8rem; }
-        .card-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: auto; }
+        .card-actions { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: auto; }
 
         .btn {
             padding: 0.5rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.8rem;
@@ -236,8 +239,10 @@
         }
         .btn-outline { background: transparent; border: 1px solid var(--dark); color: var(--dark); }
         .btn-outline:hover { background: var(--light); }
-        .btn-primary { background: var(--primary); color: white; grid-column: 1 / -1; }
+        .btn-primary { background: var(--primary); color: white; }
         .btn-primary:hover { background: var(--primary-dark); }
+        .btn-software { background: var(--software); color: white; }
+        .btn-software:hover { background: #2563eb; }
 
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -280,7 +285,7 @@
     <header>
         <div class="brand-container">
             <img id="site-logo" src="https://via.placeholder.com/50?text=Logo" alt="DIGI-PRINT" class="site-logo">
-            <div>DIGI-<span>PRINT</span> <span class="brand-subtitle">Bibliothèque</span></div>
+            <div>DIGI-<span>PRINT</span> <span class="brand-subtitle">Bibliothèque & Logiciels</span></div>
         </div>
         <div class="header-actions">
             <a href="index.html" class="btn-vitrine"><i class="fa-solid fa-store"></i> Vitrine</a>
@@ -295,60 +300,72 @@
         
         <div class="admin-panel" id="admin-panel">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                <h2 class="section-title" style="margin:0; border-left:none; padding-left:0; font-size:1.3rem;">Ajouter un document</h2>
+                <h2 class="section-title" style="margin:0; border-left:none; padding-left:0; font-size:1.3rem;">Ajouter une ressource</h2>
                 <button class="btn btn-outline" onclick="logoutAdmin()" style="font-size: 0.75rem; color: var(--danger); border-color: var(--danger);"><i class="fa-solid fa-right-from-bracket"></i> Déco</button>
             </div>
             <div class="admin-form">
-                <select id="doc-filiere">
+                <select id="doc-filiere" onchange="toggleAdminSemesterField()">
                     <option value="TRONC">Tronc Commun (S1 - S4)</option>
                     <option value="GEE">GEE - Génie Électrique & Énergétique</option>
                     <option value="GEAAH">GEAAH - Génie de l'Eau & Aménagements</option>
                     <option value="GC-BTP">GC-BTP - Génie Civil & BTP</option>
+                    <option value="LOGICIELS">💻 Logiciels & Outils</option>
                 </select>
-                <select id="doc-semester">
-                    <option value="S1">Semestre 1 (S1)</option>
-                    <option value="S2">Semestre 2 (S2)</option>
-                    <option value="S3">Semestre 3 (S3)</option>
-                    <option value="S4">Semestre 4 (S4)</option>
-                    <option value="S5" selected>Semestre 5 (S5)</option>
-                    <option value="S6">Semestre 6 (S6)</option>
-                    <option value="S7">Semestre 7 (S7)</option>
-                    <option value="S8">Semestre 8 (S8)</option>
-                    <option value="S9">Semestre 9 (S9)</option>
-                </select>
-                <select id="doc-type">
-                    <option value="cours">📚 Cours & Supports</option>
-                    <option value="exam">📝 Ancien Sujet / Examen</option>
-                </select>
-                <input type="text" id="doc-section" placeholder="Nom de la matière (ex: Électrotechnique)">
-                <input type="text" id="doc-title" placeholder="Titre du document (ex: Chapitre 1)">
-                <textarea id="doc-desc" placeholder="Courte description..."></textarea>
-                <input type="number" id="doc-pages" placeholder="Nombre de pages estimé (ex: 30)">
+                
+                <div id="admin-semester-group">
+                    <select id="doc-semester">
+                        <option value="S1">Semestre 1 (S1)</option>
+                        <option value="S2">Semestre 2 (S2)</option>
+                        <option value="S3">Semestre 3 (S3)</option>
+                        <option value="S4">Semestre 4 (S4)</option>
+                        <option value="S5" selected>Semestre 5 (S5)</option>
+                        <option value="S6">Semestre 6 (S6)</option>
+                        <option value="S7">Semestre 7 (S7)</option>
+                        <option value="S8">Semestre 8 (S8)</option>
+                        <option value="S9">Semestre 9 (S9)</option>
+                    </select>
+                </div>
+
+                <div id="admin-type-group">
+                    <select id="doc-type">
+                        <option value="cours">📚 Cours & Supports</option>
+                        <option value="exam">📝 Ancien Sujet / Examen</option>
+                    </select>
+                </div>
+
+                <input type="text" id="doc-section" placeholder="Catégorie ou Matière (ex: Automatismes, DAO, ...)">
+                <input type="text" id="doc-title" placeholder="Nom du logiciel ou document (ex: Zelio Soft 2)">
+                <textarea id="doc-desc" placeholder="Courte description ou instructions d'installation..."></textarea>
+                
+                <div id="admin-pages-group">
+                    <input type="number" id="doc-pages" placeholder="Nombre de pages estimé (si impression)">
+                </div>
+
                 <input type="text" id="doc-link" placeholder="Lien de partage Google Drive ou ID du fichier">
-                <button class="btn btn-primary" onclick="addNewDocument()">Publier dans la bibliothèque</button>
+                <button class="btn btn-primary" onclick="addNewDocument()">Publier la ressource</button>
             </div>
         </div>
 
         <!-- BARRE DE RECHERCHE -->
         <div class="search-bar-container">
             <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" id="search-input" placeholder="Rechercher un cours, une matière, un sujet d'examen..." oninput="handleSearch()">
+            <input type="text" id="search-input" placeholder="Rechercher un cours, un sujet ou un logiciel..." oninput="handleSearch()">
         </div>
 
-        <!-- SÉLECTION DES FILIÈRES -->
+        <!-- SÉLECTION DES RUBRIQUES (FILIÈRES + LOGICIELS) -->
         <div class="filiere-nav">
             <button class="filiere-btn active" onclick="switchFiliere('TRONC')">Tronc Commun (S1-S4)</button>
             <button class="filiere-btn" onclick="switchFiliere('GEE')">GEE (S5-S9)</button>
             <button class="filiere-btn" onclick="switchFiliere('GEAAH')">GEAAH (S5-S9)</button>
             <button class="filiere-btn" onclick="switchFiliere('GC-BTP')">GC-BTP (S5-S9)</button>
+            <button class="filiere-btn software-tab" onclick="switchFiliere('LOGICIELS')"><i class="fa-solid fa-laptop-code"></i> Logiciels & Outils</button>
         </div>
 
-        <!-- SÉLECTION DES SEMESTRES -->
-        <div class="semesters-nav" id="semesters-nav-container">
-            <!-- Généré dynamiquement selon la filière -->
-        </div>
+        <!-- SÉLECTION DES SEMESTRES (Caché si la rubrique Logiciels est active) -->
+        <div class="semesters-nav" id="semesters-nav-container"></div>
 
-        <div class="type-selector">
+        <!-- SÉLECTEUR DE TYPE (Cours / Examens - Caché si Logiciels) -->
+        <div class="type-selector" id="type-selector-container">
             <button class="type-btn active cours" id="btn-type-cours" onclick="switchDocType('cours')">
                 <i class="fa-solid fa-book-open"></i> Cours & Supports
             </button>
@@ -360,7 +377,7 @@
         <section>
             <h2 class="section-title" id="current-section-title">Semestre 1 - Cours & Supports</h2>
             <div id="semester-content">
-                <p style="color:#6b7280; text-align:center;">Chargement des documents...</p>
+                <p style="color:#6b7280; text-align:center;">Chargement des ressources...</p>
             </div>
         </section>
     </div>
@@ -472,28 +489,34 @@
             activeFiliere = filiere;
             document.querySelectorAll('.filiere-btn').forEach(btn => {
                 btn.classList.remove('active');
-                if(btn.innerText.includes(filiere === 'TRONC' ? 'Tronc Commun' : filiere)) btn.classList.add('active');
+                if(btn.innerText.includes(filiere === 'TRONC' ? 'Tronc Commun' : (filiere === 'LOGICIELS' ? 'Logiciels' : filiere))) {
+                    btn.classList.add('active');
+                }
             });
 
-            // Définir le premier semestre par défaut selon la filière
-            if (filiere === 'TRONC') activeSemester = 'S1';
-            else activeSemester = 'S5';
+            const semNav = document.getElementById('semesters-nav-container');
+            const typeSel = document.getElementById('type-selector-container');
 
-            renderSemestersNav();
+            if (filiere === 'LOGICIELS') {
+                semNav.style.display = 'none';
+                typeSel.style.display = 'none';
+            } else {
+                semNav.style.display = 'flex';
+                typeSel.style.display = 'flex';
+                if (filiere === 'TRONC') activeSemester = 'S1';
+                else activeSemester = 'S5';
+                renderSemestersNav();
+            }
+
             document.getElementById('search-input').value = '';
             updateTitle();
             renderActiveView();
         };
 
         function renderSemestersNav() {
+            if (activeFiliere === 'LOGICIELS') return;
             const container = document.getElementById('semesters-nav-container');
-            let semList = [];
-
-            if (activeFiliere === 'TRONC') {
-                semList = ['S1', 'S2', 'S3', 'S4'];
-            } else {
-                semList = ['S5', 'S6', 'S7', 'S8', 'S9'];
-            }
+            let semList = activeFiliere === 'TRONC' ? ['S1', 'S2', 'S3', 'S4'] : ['S5', 'S6', 'S7', 'S8', 'S9'];
 
             let html = '';
             semList.forEach(sem => {
@@ -537,6 +560,10 @@
                 document.getElementById('current-section-title').innerText = `Résultats de recherche pour : "${searchQuery}"`;
                 return;
             }
+            if (activeFiliere === 'LOGICIELS') {
+                document.getElementById('current-section-title').innerText = `💻 Logiciels & Outils Recommandés`;
+                return;
+            }
             const semNum = activeSemester.replace('S', '');
             const typeLabel = activeType === 'cours' ? 'Cours & Supports' : 'Anciens Sujets & Examens';
             document.getElementById('current-section-title').innerText = `[${activeFiliere}] Semestre ${semNum} - ${typeLabel}`;
@@ -576,6 +603,23 @@
             alert("Déconnecté.");
         };
 
+        window.toggleAdminSemesterField = function() {
+            const filiere = document.getElementById('doc-filiere').value;
+            const semGroup = document.getElementById('admin-semester-group');
+            const typeGroup = document.getElementById('admin-type-group');
+            const pagesGroup = document.getElementById('admin-pages-group');
+
+            if (filiere === 'LOGICIELS') {
+                semGroup.style.display = 'none';
+                typeGroup.style.display = 'none';
+                pagesGroup.style.display = 'none';
+            } else {
+                semGroup.style.display = 'block';
+                typeGroup.style.display = 'block';
+                pagesGroup.style.display = 'block';
+            }
+        };
+
         function extractDriveId(input) {
             input = input.trim();
             const match = input.match(/\/d\/([a-zA-Z0-9_-]+)/);
@@ -587,12 +631,12 @@
             if (!isUserAdmin) return alert("Action non autorisée.");
 
             const filiere = document.getElementById('doc-filiere').value;
-            const semester = document.getElementById('doc-semester').value;
-            const docType = document.getElementById('doc-type').value;
-            const section = document.getElementById('doc-section').value.trim() || "Divers";
+            const semester = filiere === 'LOGICIELS' ? 'LOG' : document.getElementById('doc-semester').value;
+            const docType = filiere === 'LOGICIELS' ? 'logiciel' : document.getElementById('doc-type').value;
+            const section = document.getElementById('doc-section').value.trim() || (filiere === 'LOGICIELS' ? 'Utilitaires' : 'Divers');
             const title = document.getElementById('doc-title').value.trim();
             const desc = document.getElementById('doc-desc').value.trim();
-            const pages = parseInt(document.getElementById('doc-pages').value) || 1;
+            const pages = filiere === 'LOGICIELS' ? 0 : (parseInt(document.getElementById('doc-pages').value) || 1);
             const rawLink = document.getElementById('doc-link').value.trim();
 
             if (!title || !rawLink) return alert("Veuillez remplir le titre et le lien !");
@@ -606,13 +650,13 @@
                     type: docType,
                     section: section,
                     title: title,
-                    description: desc || "Support académique",
+                    description: desc || "Ressource numérique",
                     pages: pages,
                     fileId: fileId,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
-                alert("Document publié avec succès !");
+                alert("Ressource publiée avec succès !");
                 document.getElementById('doc-title').value = '';
                 document.getElementById('doc-section').value = '';
                 document.getElementById('doc-desc').value = '';
@@ -638,7 +682,7 @@
                 querySnapshot.forEach((docSnap) => {
                     const data = docSnap.data();
                     if (!data.type) data.type = 'cours'; 
-                    if (!data.filiere) data.filiere = 'TRONC'; // Rétrocompatibilité
+                    if (!data.filiere) data.filiere = 'TRONC';
                     allDocuments.push({ id: docSnap.id, ...data });
                 });
                 renderActiveView();
@@ -653,12 +697,12 @@
 
             if (searchQuery.length > 0) {
                 filteredDocs = allDocuments.filter(d => 
-                    d.type === activeType && (
-                        d.title.toLowerCase().includes(searchQuery) || 
-                        (d.section && d.section.toLowerCase().includes(searchQuery)) ||
-                        (d.description && d.description.toLowerCase().includes(searchQuery))
-                    )
+                    d.title.toLowerCase().includes(searchQuery) || 
+                    (d.section && d.section.toLowerCase().includes(searchQuery)) ||
+                    (d.description && d.description.toLowerCase().includes(searchQuery))
                 );
+            } else if (activeFiliere === 'LOGICIELS') {
+                filteredDocs = allDocuments.filter(d => d.filiere === 'LOGICIELS');
             } else {
                 filteredDocs = allDocuments.filter(d => d.filiere === activeFiliere && d.semester === activeSemester && d.type === activeType);
             }
@@ -667,17 +711,18 @@
 
             if (filteredDocs.length === 0) {
                 if (searchQuery.length > 0) {
-                    container.innerHTML = `<p style="color:#6b7280; text-align:center; padding: 2rem;">Aucun document ne correspond à "${searchQuery}".</p>`;
+                    container.innerHTML = `<p style="color:#6b7280; text-align:center; padding: 2rem;">Aucune ressource ne correspond à "${searchQuery}".</p>`;
+                } else if (activeFiliere === 'LOGICIELS') {
+                    container.innerHTML = `<p style="color:#6b7280; text-align:center; padding: 2rem;">Aucun logiciel disponible pour le moment.</p>`;
                 } else {
-                    const labelType = activeType === 'cours' ? 'de cours' : "d'anciens sujets";
-                    container.innerHTML = `<p style="color:#6b7280; text-align:center; padding: 2rem;">Aucun document ${labelType} disponible pour cette rubrique.</p>`;
+                    container.innerHTML = `<p style="color:#6b7280; text-align:center; padding: 2rem;">Aucun document disponible pour cette rubrique.</p>`;
                 }
                 return;
             }
 
             const sectionsMap = {};
             filteredDocs.forEach(doc => {
-                const secPrefix = searchQuery.length > 0 ? `[${doc.filiere} - ${doc.semester}] ` : "";
+                const secPrefix = searchQuery.length > 0 ? `[${doc.filiere}] ` : "";
                 const sec = secPrefix + (doc.section || "Général");
                 
                 if (!sectionsMap[sec]) sectionsMap[sec] = [];
@@ -693,26 +738,46 @@
                     const safeTitle = data.title.replace(/'/g, "\\'");
                     const deleteDisplay = isUserAdmin ? 'flex' : 'none';
 
-                    html += `
-                        <div class="card">
-                            <button class="btn-delete-card" style="display: ${deleteDisplay};" onclick="deleteDocument('${data.id}', '${safeTitle}')" title="Supprimer">
-                                <i class="fa-solid fa-trash-can"></i>
-                            </button>
-                            <div class="card-thumbnail">
-                                <iframe src="https://drive.google.com/file/d/${data.fileId}/preview"></iframe>
+                    if (data.filiere === 'LOGICIELS') {
+                        // Carte spécifique pour les logiciels (Pas d'impression, uniquement zoom / téléchargement direct)
+                        html += `
+                            <div class="card" style="border-top: 4px solid var(--software);">
+                                <button class="btn-delete-card" style="display: ${deleteDisplay};" onclick="deleteDocument('${data.id}', '${safeTitle}')" title="Supprimer">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                                <div>
+                                    <h4 style="color:var(--software);"><i class="fa-solid fa-laptop-code"></i> ${data.title}</h4>
+                                    <p>${data.description}</p>
+                                </div>
+                                <div class="card-actions" style="margin-top:1rem; grid-template-columns: 1fr 1fr;">
+                                    <a href="https://drive.google.com/uc?export=download&id=${data.fileId}" class="btn btn-software" target="_blank"><i class="fa-solid fa-download"></i> Télécharger</a>
+                                    <button class="btn btn-outline" onclick="openPreview('${data.fileId}', '${safeTitle}')"><i class="fa-solid fa-eye"></i> Instructions</button>
+                                </div>
                             </div>
-                            <div>
-                                <h4>${data.title}</h4>
-                                <p>${data.description}</p>
-                                <span style="font-size:0.8rem; color:#059669; font-weight:bold;">Estimé à ${data.pages} pages</span>
+                        `;
+                    } else {
+                        // Carte classique pour les cours/examens
+                        html += `
+                            <div class="card">
+                                <button class="btn-delete-card" style="display: ${deleteDisplay};" onclick="deleteDocument('${data.id}', '${safeTitle}')" title="Supprimer">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                                <div class="card-thumbnail">
+                                    <iframe src="https://drive.google.com/file/d/${data.fileId}/preview"></iframe>
+                                </div>
+                                <div>
+                                    <h4>${data.title}</h4>
+                                    <p>${data.description}</p>
+                                    <span style="font-size:0.8rem; color:#059669; font-weight:bold;">Estimé à ${data.pages} pages</span>
+                                </div>
+                                <div class="card-actions" style="margin-top:1rem; grid-template-columns: 1fr 1fr 1fr;">
+                                    <button class="btn btn-outline" onclick="openPreview('${data.fileId}', '${safeTitle}')"><i class="fa-solid fa-eye"></i> Zoom</button>
+                                    <a href="https://drive.google.com/uc?export=download&id=${data.fileId}" class="btn btn-outline" target="_blank"><i class="fa-solid fa-download"></i> Télécharger</a>
+                                    <button class="btn-primary btn" onclick="addToCart('${safeTitle}', 'doc', ${data.pages})"><i class="fa-solid fa-print"></i> Imprimer</button>
+                                </div>
                             </div>
-                            <div class="card-actions" style="margin-top:1rem;">
-                                <button class="btn btn-outline" onclick="openPreview('${data.fileId}', '${safeTitle}')"><i class="fa-solid fa-eye"></i> Zoom</button>
-                                <a href="https://drive.google.com/uc?export=download&id=${data.fileId}" class="btn btn-outline" target="_blank"><i class="fa-solid fa-download"></i> Télécharger</a>
-                                <button class="btn-primary btn" onclick="addToCart('${safeTitle}', 'doc', ${data.pages})"><i class="fa-solid fa-print"></i> Imprimer</button>
-                            </div>
-                        </div>
-                    `;
+                        `;
+                    }
                 });
                 html += `</div>`;
             }
