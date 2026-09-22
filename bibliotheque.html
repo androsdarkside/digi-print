@@ -72,6 +72,7 @@
             display: flex;
             gap: 10px;
             align-items: center;
+            flex-wrap: wrap;
         }
 
         .btn-vitrine {
@@ -86,6 +87,21 @@
         }
 
         .btn-vitrine:hover { background: white; color: var(--dark); }
+
+        .btn-share-wa {
+            background: var(--whatsapp);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: 0.2s;
+        }
+
+        .btn-share-wa:hover { background: #1ebd58; }
 
         .btn-admin {
             background: transparent;
@@ -149,7 +165,6 @@
             font-size: 1.1rem;
         }
 
-        /* Sélection des Rubriques (Filières + Logiciels) */
         .filiere-nav {
             display: flex;
             gap: 10px;
@@ -174,7 +189,6 @@
         .filiere-btn.active { background: var(--dark); color: white; border-color: var(--dark); }
         .filiere-btn.software-tab.active { background: var(--software); border-color: var(--software); }
 
-        /* Sélection des Semestres */
         .semesters-nav {
             display: flex;
             gap: 8px;
@@ -192,7 +206,6 @@
         .semester-btn:hover { border-color: var(--primary); color: var(--primary); }
         .semester-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-        /* Sélecteur de Type (Cours, Examens, Vidéos) */
         .type-selector { display: flex; gap: 10px; margin-bottom: 2rem; flex-wrap: wrap; }
         .type-btn {
             background: white; border: 2px solid #e5e7eb; color: #4b5563;
@@ -293,10 +306,14 @@
         </div>
         <div class="header-actions">
             <a href="index.html" class="btn-vitrine"><i class="fa-solid fa-store"></i> Vitrine</a>
-            <button class="btn-admin" onclick="handleAdminClick()"><i class="fa-solid fa-lock" id="admin-icon"></i> <span id="admin-btn-text">Admin</span></button>
+            <!-- Bouton pour partager un cours directement sur WhatsApp -->
+            <a href="https://wa.me/22650989590?text=Bonjour%20DIGI-PRINT,%20je%20souhaite%20partager%20un%20cours%20ou%20un%20ancien%20sujet%20pour%20la%20bibliothèque." target="_blank" class="btn-share-wa">
+                <i class="fa-brands fa-whatsapp"></i> Partager un cours
+            </a>
             <button class="cart-btn" onclick="openCart()">
                 <i class="fa-solid fa-cart-shopping"></i> Panier <span id="cart-count" class="badge">0</span>
             </button>
+            <button class="btn-admin" onclick="handleAdminClick()"><i class="fa-solid fa-lock" id="admin-icon"></i> <span id="admin-btn-text">Admin</span></button>
         </div>
     </header>
 
@@ -756,7 +773,6 @@
                     const deleteDisplay = isUserAdmin ? 'flex' : 'none';
 
                     if (data.filiere === 'LOGICIELS') {
-                        // Carte Logiciel
                         html += `
                             <div class="card" style="border-top: 4px solid var(--software);">
                                 <button class="btn-delete-card" style="display: ${deleteDisplay};" onclick="deleteDocument('${data.id}', '${safeTitle}')" title="Supprimer">
@@ -773,7 +789,6 @@
                             </div>
                         `;
                     } else if (data.type === 'video') {
-                        // Carte Vidéo YouTube
                         html += `
                             <div class="card" style="border-top: 4px solid var(--video);">
                                 <button class="btn-delete-card" style="display: ${deleteDisplay};" onclick="deleteDocument('${data.id}', '${safeTitle}')" title="Supprimer">
@@ -792,7 +807,6 @@
                             </div>
                         `;
                     } else {
-                        // Carte Cours / Examen classique
                         html += `
                             <div class="card">
                                 <button class="btn-delete-card" style="display: ${deleteDisplay};" onclick="deleteDocument('${data.id}', '${safeTitle}')" title="Supprimer">
@@ -893,7 +907,7 @@
                 return;
             }
 
-            let html =`’`;
+            let html = '';
             let grandTotal = 0;
 
             cart.forEach((item, index) => {
