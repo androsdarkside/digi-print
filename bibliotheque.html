@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DIGI-PRINT 2iE - Bibliothèque, Supports & Logiciels</title>
+    <title>DIGI-PRINT 2iE - Bibliothèque, Supports & Vidéos</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -17,6 +17,7 @@
             --whatsapp: #25d366;
             --danger: #ef4444;
             --exam: #f59e0b;
+            --video: #ef4444;
             --software: #3b82f6;
         }
 
@@ -171,8 +172,6 @@
 
         .filiere-btn:hover { border-color: var(--primary); color: var(--primary); }
         .filiere-btn.active { background: var(--dark); color: white; border-color: var(--dark); }
-        
-        /* Style spécifique pour le bouton Logiciels */
         .filiere-btn.software-tab.active { background: var(--software); border-color: var(--software); }
 
         /* Sélection des Semestres */
@@ -193,14 +192,16 @@
         .semester-btn:hover { border-color: var(--primary); color: var(--primary); }
         .semester-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-        .type-selector { display: flex; gap: 10px; margin-bottom: 2rem; }
+        /* Sélecteur de Type (Cours, Examens, Vidéos) */
+        .type-selector { display: flex; gap: 10px; margin-bottom: 2rem; flex-wrap: wrap; }
         .type-btn {
             background: white; border: 2px solid #e5e7eb; color: #4b5563;
             padding: 0.5rem 1.2rem; border-radius: 8px; cursor: pointer;
             font-weight: 600; transition: 0.2s; display: flex; align-items: center; gap: 8px;
         }
         .type-btn.active.cours { background: var(--primary); color: white; border-color: var(--primary); }
-        .type-btn.active.exams { background: var(--exam); color: white; border-color: var(--exam); }
+        .type-btn.active.exam { background: var(--exam); color: white; border-color: var(--exam); }
+        .type-btn.active.video { background: var(--video); color: white; border-color: var(--video); }
 
         h2.section-title { font-size: 1.6rem; margin: 1.5rem 0 1rem 0; color: var(--dark); border-left: 5px solid var(--primary); padding-left: 10px; }
         h3.subsection-title { font-size: 1.2rem; margin: 1.5rem 0 0.8rem 0; color: #4b5563; border-bottom: 2px solid #e5e7eb; padding-bottom: 5px; }
@@ -227,11 +228,12 @@
             justify-content: center; align-items: center; font-size: 0.9rem; z-index: 10;
         }
 
-        .card-thumbnail { width: 100%; height: 160px; background: #e5e7eb; border-radius: 6px; overflow: hidden; margin-bottom: 1rem; position: relative; pointer-events: none; }
-        .card-thumbnail iframe { width: 100%; height: 250px; border: none; margin-top: -45px; background-color: #ffffff;}
+        .card-thumbnail { width: 100%; height: 160px; background: #e5e7eb; border-radius: 6px; overflow: hidden; margin-bottom: 1rem; position: relative; }
+        .card-thumbnail iframe { width: 100%; height: 100%; border: none; background-color: #ffffff;}
+        
         .card h4 { margin-bottom: 0.4rem; color: var(--dark); font-size: 1.05rem; }
         .card p { color: #6b7280; font-size: 0.85rem; margin-bottom: 0.8rem; }
-        .card-actions { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: auto; }
+        .card-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: auto; }
 
         .btn {
             padding: 0.5rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.8rem;
@@ -239,10 +241,12 @@
         }
         .btn-outline { background: transparent; border: 1px solid var(--dark); color: var(--dark); }
         .btn-outline:hover { background: var(--light); }
-        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary { background: var(--primary); color: white; grid-column: 1 / -1; }
         .btn-primary:hover { background: var(--primary-dark); }
         .btn-software { background: var(--software); color: white; }
         .btn-software:hover { background: #2563eb; }
+        .btn-video { background: var(--video); color: white; }
+        .btn-video:hover { background: #dc2626; }
 
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -285,7 +289,7 @@
     <header>
         <div class="brand-container">
             <img id="site-logo" src="https://via.placeholder.com/50?text=Logo" alt="DIGI-PRINT" class="site-logo">
-            <div>DIGI-<span>PRINT</span> <span class="brand-subtitle">Bibliothèque & Logiciels</span></div>
+            <div>DIGI-<span>PRINT</span> <span class="brand-subtitle">Bibliothèque, Supports & Vidéos</span></div>
         </div>
         <div class="header-actions">
             <a href="index.html" class="btn-vitrine"><i class="fa-solid fa-store"></i> Vitrine</a>
@@ -304,7 +308,7 @@
                 <button class="btn btn-outline" onclick="logoutAdmin()" style="font-size: 0.75rem; color: var(--danger); border-color: var(--danger);"><i class="fa-solid fa-right-from-bracket"></i> Déco</button>
             </div>
             <div class="admin-form">
-                <select id="doc-filiere" onchange="toggleAdminSemesterField()">
+                <select id="doc-filiere" onchange="toggleAdminFields()">
                     <option value="TRONC">Tronc Commun (S1 - S4)</option>
                     <option value="GEE">GEE - Génie Électrique & Énergétique</option>
                     <option value="GEAAH">GEAAH - Génie de l'Eau & Aménagements</option>
@@ -330,18 +334,19 @@
                     <select id="doc-type">
                         <option value="cours">📚 Cours & Supports</option>
                         <option value="exam">📝 Ancien Sujet / Examen</option>
+                        <option value="video">🎥 Vidéo YouTube / Tutoriel</option>
                     </select>
                 </div>
 
-                <input type="text" id="doc-section" placeholder="Catégorie ou Matière (ex: Automatismes, DAO, ...)">
-                <input type="text" id="doc-title" placeholder="Nom du logiciel ou document (ex: Zelio Soft 2)">
-                <textarea id="doc-desc" placeholder="Courte description ou instructions d'installation..."></textarea>
+                <input type="text" id="doc-section" placeholder="Catégorie ou Matière (ex: Électrotechnique, Hydraulique, ...)">
+                <input type="text" id="doc-title" placeholder="Titre de la ressource (ex: Correction TD Pompes)">
+                <textarea id="doc-desc" placeholder="Courte description de la vidéo ou du document..."></textarea>
                 
                 <div id="admin-pages-group">
                     <input type="number" id="doc-pages" placeholder="Nombre de pages estimé (si impression)">
                 </div>
 
-                <input type="text" id="doc-link" placeholder="Lien de partage Google Drive ou ID du fichier">
+                <input type="text" id="doc-link" placeholder="Lien Google Drive (PDF) ou URL/ID YouTube (Vidéo)">
                 <button class="btn btn-primary" onclick="addNewDocument()">Publier la ressource</button>
             </div>
         </div>
@@ -349,7 +354,7 @@
         <!-- BARRE DE RECHERCHE -->
         <div class="search-bar-container">
             <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" id="search-input" placeholder="Rechercher un cours, un sujet ou un logiciel..." oninput="handleSearch()">
+            <input type="text" id="search-input" placeholder="Rechercher un cours, un sujet, une vidéo ou un logiciel..." oninput="handleSearch()">
         </div>
 
         <!-- SÉLECTION DES RUBRIQUES (FILIÈRES + LOGICIELS) -->
@@ -361,16 +366,19 @@
             <button class="filiere-btn software-tab" onclick="switchFiliere('LOGICIELS')"><i class="fa-solid fa-laptop-code"></i> Logiciels & Outils</button>
         </div>
 
-        <!-- SÉLECTION DES SEMESTRES (Caché si la rubrique Logiciels est active) -->
+        <!-- SÉLECTION DES SEMESTRES -->
         <div class="semesters-nav" id="semesters-nav-container"></div>
 
-        <!-- SÉLECTEUR DE TYPE (Cours / Examens - Caché si Logiciels) -->
+        <!-- SÉLECTEUR DE TYPE (Cours, Examens, Vidéos) -->
         <div class="type-selector" id="type-selector-container">
             <button class="type-btn active cours" id="btn-type-cours" onclick="switchDocType('cours')">
                 <i class="fa-solid fa-book-open"></i> Cours & Supports
             </button>
-            <button class="type-btn exams" id="btn-type-exams" onclick="switchDocType('exam')">
+            <button class="type-btn" id="btn-type-exam" onclick="switchDocType('exam')">
                 <i class="fa-solid fa-file-lines"></i> Anciens Sujets & Examens
+            </button>
+            <button class="type-btn" id="btn-type-video" onclick="switchDocType('video')">
+                <i class="fa-brands fa-youtube" style="color:var(--video)"></i> Vidéos & Tutoriels
             </button>
         </div>
 
@@ -539,16 +547,10 @@
 
         window.switchDocType = function(type) {
             activeType = type;
-            const btnCours = document.getElementById('btn-type-cours');
-            const btnExams = document.getElementById('btn-type-exams');
-
-            if (type === 'cours') {
-                btnCours.classList.add('active', 'cours');
-                btnExams.classList.remove('active', 'exams');
-            } else {
-                btnExams.classList.add('active', 'exams');
-                btnCours.classList.remove('active', 'cours');
-            }
+            ['cours', 'exam', 'video'].forEach(t => {
+                const btn = document.getElementById(`btn-type-${t}`);
+                if (btn) btn.className = `type-btn ${t === type ? 'active ' + t : ''}`;
+            });
             document.getElementById('search-input').value = '';
             updateTitle();
             renderActiveView();
@@ -565,7 +567,10 @@
                 return;
             }
             const semNum = activeSemester.replace('S', '');
-            const typeLabel = activeType === 'cours' ? 'Cours & Supports' : 'Anciens Sujets & Examens';
+            let typeLabel = 'Cours & Supports';
+            if (activeType === 'exam') typeLabel = 'Anciens Sujets & Examens';
+            if (activeType === 'video') typeLabel = 'Vidéos & Tutoriels';
+
             document.getElementById('current-section-title').innerText = `[${activeFiliere}] Semestre ${semNum} - ${typeLabel}`;
         }
 
@@ -603,7 +608,7 @@
             alert("Déconnecté.");
         };
 
-        window.toggleAdminSemesterField = function() {
+        window.toggleAdminFields = function() {
             const filiere = document.getElementById('doc-filiere').value;
             const semGroup = document.getElementById('admin-semester-group');
             const typeGroup = document.getElementById('admin-type-group');
@@ -627,6 +632,13 @@
             return input;
         }
 
+        function extractYouTubeId(input) {
+            input = input.trim();
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            const match = input.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : input;
+        }
+
         window.addNewDocument = async function() {
             if (!isUserAdmin) return alert("Action non autorisée.");
 
@@ -636,12 +648,17 @@
             const section = document.getElementById('doc-section').value.trim() || (filiere === 'LOGICIELS' ? 'Utilitaires' : 'Divers');
             const title = document.getElementById('doc-title').value.trim();
             const desc = document.getElementById('doc-desc').value.trim();
-            const pages = filiere === 'LOGICIELS' ? 0 : (parseInt(document.getElementById('doc-pages').value) || 1);
+            const pages = (filiere === 'LOGICIELS' || docType === 'video') ? 0 : (parseInt(document.getElementById('doc-pages').value) || 1);
             const rawLink = document.getElementById('doc-link').value.trim();
 
             if (!title || !rawLink) return alert("Veuillez remplir le titre et le lien !");
 
-            const fileId = extractDriveId(rawLink);
+            let fileIdOrUrl = rawLink;
+            if (docType === 'video') {
+                fileIdOrUrl = extractYouTubeId(rawLink);
+            } else if (filiere !== 'LOGICIELS') {
+                fileIdOrUrl = extractDriveId(rawLink);
+            }
 
             try {
                 await db.collection("documents").add({
@@ -652,7 +669,7 @@
                     title: title,
                     description: desc || "Ressource numérique",
                     pages: pages,
-                    fileId: fileId,
+                    fileId: fileIdOrUrl,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
@@ -715,7 +732,7 @@
                 } else if (activeFiliere === 'LOGICIELS') {
                     container.innerHTML = `<p style="color:#6b7280; text-align:center; padding: 2rem;">Aucun logiciel disponible pour le moment.</p>`;
                 } else {
-                    container.innerHTML = `<p style="color:#6b7280; text-align:center; padding: 2rem;">Aucun document disponible pour cette rubrique.</p>`;
+                    container.innerHTML = `<p style="color:#6b7280; text-align:center; padding: 2rem;">Aucun document ou vidéo disponible pour cette rubrique.</p>`;
                 }
                 return;
             }
@@ -739,7 +756,7 @@
                     const deleteDisplay = isUserAdmin ? 'flex' : 'none';
 
                     if (data.filiere === 'LOGICIELS') {
-                        // Carte spécifique pour les logiciels (Pas d'impression, uniquement zoom / téléchargement direct)
+                        // Carte Logiciel
                         html += `
                             <div class="card" style="border-top: 4px solid var(--software);">
                                 <button class="btn-delete-card" style="display: ${deleteDisplay};" onclick="deleteDocument('${data.id}', '${safeTitle}')" title="Supprimer">
@@ -755,8 +772,27 @@
                                 </div>
                             </div>
                         `;
+                    } else if (data.type === 'video') {
+                        // Carte Vidéo YouTube
+                        html += `
+                            <div class="card" style="border-top: 4px solid var(--video);">
+                                <button class="btn-delete-card" style="display: ${deleteDisplay};" onclick="deleteDocument('${data.id}', '${safeTitle}')" title="Supprimer">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                                <div class="card-thumbnail">
+                                    <iframe src="https://www.youtube.com/embed/${data.fileId}" allowfullscreen></iframe>
+                                </div>
+                                <div>
+                                    <h4 style="color:var(--dark);"><i class="fa-brands fa-youtube" style="color:var(--video)"></i> ${data.title}</h4>
+                                    <p>${data.description}</p>
+                                </div>
+                                <div class="card-actions" style="margin-top:1rem; grid-template-columns: 1fr;">
+                                    <a href="https://www.youtube.com/watch?v=${data.fileId}" class="btn btn-video" target="_blank"><i class="fa-brands fa-youtube"></i> Regarder sur YouTube</a>
+                                </div>
+                            </div>
+                        `;
                     } else {
-                        // Carte classique pour les cours/examens
+                        // Carte Cours / Examen classique
                         html += `
                             <div class="card">
                                 <button class="btn-delete-card" style="display: ${deleteDisplay};" onclick="deleteDocument('${data.id}', '${safeTitle}')" title="Supprimer">
@@ -857,7 +893,7 @@
                 return;
             }
 
-            let html = '';
+            let html =`’`;
             let grandTotal = 0;
 
             cart.forEach((item, index) => {
