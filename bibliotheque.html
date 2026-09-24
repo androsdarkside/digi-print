@@ -314,7 +314,6 @@
             <a href="https://wa.me/22650989590?text=Bonjour%20DIGI-PRINT,%20je%20souhaite%20partager%20un%20cours%20ou%20un%20ancien%20sujet%20pour%20la%20bibliothèque." target="_blank" class="btn-share-wa">
                 <i class="fa-brands fa-whatsapp"></i> Partager un cours
             </a>
-            <!-- BOUTON D'IMPRESSION MIS À JOUR -->
             <button class="cart-btn" onclick="openCart()">
                 <i class="fa-solid fa-print"></i> Imprimer la sélection <span id="cart-count" class="badge">0</span>
             </button>
@@ -428,7 +427,6 @@
         </div>
     </div>
 
-    <!-- FENÊTRE MODALE D'IMPRESSION MIS À JOUR -->
     <div class="modal" id="cart-modal">
         <div class="modal-content" style="max-width: 600px;">
             <span class="close-modal" onclick="closeCart()">&times;</span>
@@ -463,12 +461,12 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // TARIFS MIS À JOUR
+        // NOUVEAUX TARIFS 
         const RATES = {
-            'nb_verso': 15,
-            'nb_recto_verso': 25,
-            'couleur_verso': 50,
-            'couleur_recto_verso': 90
+            'nb_recto_verso': 15,
+            'nb_verso': 20,
+            'couleur_recto_verso': 25,
+            'couleur_verso': 50
         };
 
         let cart = JSON.parse(localStorage.getItem('digiprint_cart')) || [];
@@ -827,7 +825,6 @@
                                     <button class="btn btn-outline" onclick="openPreview('${data.fileId}', '${safeTitle}')"><i class="fa-solid fa-eye"></i> Zoom</button>
                                     <a href="https://drive.google.com/uc?export=download&id=${data.fileId}" class="btn btn-outline" target="_blank"><i class="fa-solid fa-download"></i> Télécharger</a>
                                     
-                                    <!-- BOUTON D'AJOUT MIS À JOUR -->
                                     <button class="btn-primary btn" onclick="addToCart('${safeTitle}', 'doc', ${data.pages})">
                                         <i class="fa-solid fa-plus"></i> Sélectionner pour imprimer
                                     </button>
@@ -852,7 +849,6 @@
             document.getElementById('preview-iframe').src = "";
         };
 
-        // --- LOGIQUE DE SÉLECTION D'IMPRESSION (ANCIEN PANIER) ---
         function saveCart() {
             localStorage.setItem('digiprint_cart', JSON.stringify(cart));
         }
@@ -900,7 +896,7 @@
         };
 
         function calculateItemPrice(item) {
-            const ratePerPage = RATES[item.printMode] || 25;
+            const ratePerPage = RATES[item.printMode] || 15;
             return ratePerPage * item.pages * item.qty;
         }
 
@@ -932,10 +928,10 @@
                             <label>Pages: <input type="number" value="${item.pages}" min="1" style="width:50px;" onchange="updateItemOption(${index}, 'pages', this.value)"></label>
                             <label>Format: 
                                 <select onchange="updateItemOption(${index}, 'printMode', this.value)">
-                                    <option value="nb_verso" ${item.printMode === 'nb_verso' ? 'selected' : ''}>N&B Verso simple (15f)</option>
-                                    <option value="nb_recto_verso" ${item.printMode === 'nb_recto_verso' ? 'selected' : ''}>N&B Recto-Verso (25f)</option>
+                                    <option value="nb_recto_verso" ${item.printMode === 'nb_recto_verso' ? 'selected' : ''}>N&B Recto-Verso (15f)</option>
+                                    <option value="nb_verso" ${item.printMode === 'nb_verso' ? 'selected' : ''}>N&B Verso simple (20f)</option>
+                                    <option value="couleur_recto_verso" ${item.printMode === 'couleur_recto_verso' ? 'selected' : ''}>Couleur Recto-Verso (25f)</option>
                                     <option value="couleur_verso" ${item.printMode === 'couleur_verso' ? 'selected' : ''}>Couleur Verso simple (50f)</option>
-                                    <option value="couleur_recto_verso" ${item.printMode === 'couleur_recto_verso' ? 'selected' : ''}>Couleur Recto-Verso (90f)</option>
                                 </select>
                             </label>
                         </div>
