@@ -116,22 +116,6 @@
 
         .btn-admin:hover { background: var(--primary); color: white; }
 
-        .cart-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 50px;
-            cursor: pointer;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: 0.3s;
-        }
-
-        .cart-btn:hover { background: var(--primary-dark); }
-
         .container { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
 
         .search-bar-container {
@@ -271,20 +255,6 @@
         .modal-content { background: white; width: 90%; max-width: 450px; border-radius: 10px; padding: 2rem; position: relative; }
         .close-modal { position: absolute; top: 1rem; right: 1.5rem; font-size: 1.5rem; cursor: pointer; color: #6b7280; }
 
-        .cart-items-list { margin: 1.5rem 0; max-height: 300px; overflow-y: auto; }
-        .cart-item { background: var(--light); padding: 1rem; border-radius: 8px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; }
-        .cart-item-header { display: flex; justify-content: space-between; align-items: center; }
-        .cart-item-controls { display: flex; gap: 10px; align-items: center; font-size: 0.9rem; }
-        .cart-item-controls select { padding: 4px; border-radius: 4px; border: 1px solid #d1d5db; }
-        
-        .cart-total { font-size: 1.2rem; font-weight: bold; text-align: right; margin: 1rem 0; }
-        .btn-whatsapp {
-            background: var(--whatsapp); color: white; width: 100%; padding: 0.8rem; border: none; border-radius: 8px;
-            font-size: 1rem; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px;
-        }
-        .btn-whatsapp:hover { background: #1ebd58; }
-        .badge { background: #ef4444; color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.75rem; vertical-align: top; }
-
         @media (max-width: 768px) {
             header { flex-direction: column; gap: 15px; padding: 1rem; }
             .brand-container { width: 100%; justify-content: center; }
@@ -315,9 +285,6 @@
             <a href="https://wa.me/22650989590?text=Bonjour%20DIGI-PRINT,%20je%20souhaite%20partager%20un%20cours%20ou%20un%20ancien%20sujet%20pour%20la%20bibliothèque." target="_blank" class="btn-share-wa">
                 <i class="fa-brands fa-whatsapp"></i> Partager un cours
             </a>
-            <button class="cart-btn" onclick="openCart()">
-                <i class="fa-solid fa-cart-shopping"></i> Imprimer la selection <span id="cart-count" class="badge">0</span>
-            </button>
             <button class="btn-admin" onclick="handleAdminClick()"><i class="fa-solid fa-lock" id="admin-icon"></i> <span id="admin-btn-text">Admin</span></button>
         </div>
     </header>
@@ -432,25 +399,6 @@
         </div>
     </div>
 
-    <div class="modal" id="cart-modal">
-        <div class="modal-content" style="max-width: 600px;">
-            <span class="close-modal" onclick="closeCart()">&times;</span>
-            <h2>Votre Panier d'Impression</h2>
-            
-            <div class="cart-items-list" id="cart-items-container">
-                <p style="text-align: center; color: #6b7280;">Aucun support selectionner.</p>
-            </div>
-
-            <div class="cart-total">
-                Total estimé : <span id="cart-total-price">0</span> FCFA
-            </div>
-
-            <button class="btn-whatsapp" onclick="checkoutWhatsApp()">
-                <i class="fa-brands fa-whatsapp fa-lg"></i> Envoyer la selection sur WhatsApp
-            </button>
-        </div>
-    </div>
-
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyCrIZrJYKf2q5nqXQaDpDKIfgFR3tuWfOw",
@@ -466,14 +414,6 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        const RATES = {
-            'nb_recto_verso': 15,
-            'nb_verso': 20,
-            'couleur_recto_verso': 25,
-            'couleur_verso': 50
-        };
-
-        let cart = JSON.parse(localStorage.getItem('digiprint_cart')) || [];
         let isUserAdmin = false;
         let activeFiliere = 'TRONC';
         let activeSemester = 'S1';
@@ -481,7 +421,6 @@
         let allDocuments = [];
 
         document.addEventListener('DOMContentLoaded', () => {
-            updateCartCount();
             renderSemestersNav();
             fetchAllDocuments();
             loadSettings();
@@ -825,10 +764,9 @@
                                     <p>${data.description}</p>
                                     <span style="font-size:0.8rem; color:#059669; font-weight:bold;">Estimé à ${data.pages} pages</span>
                                 </div>
-                                <div class="card-actions" style="margin-top:1rem; grid-template-columns: 1fr 1fr 1fr;">
+                                <div class="card-actions" style="margin-top:1rem; grid-template-columns: 1fr 1fr;">
                                     <button class="btn btn-outline" onclick="openPreview('${data.fileId}', '${safeTitle}')"><i class="fa-solid fa-eye"></i> Zoom</button>
                                     <a href="https://drive.google.com/uc?export=download&id=${data.fileId}" class="btn btn-outline" target="_blank"><i class="fa-solid fa-download"></i> Télécharger</a>
-                                    <button class="btn-primary btn" onclick="addToCart('${safeTitle}', 'doc', ${data.pages})"><i class="fa-solid fa-print"></i> Imprimer</button>
                                 </div>
                             </div>
                         `;
@@ -848,125 +786,6 @@
         window.closePreview = function() {
             document.getElementById('preview-modal').style.display = 'none';
             document.getElementById('preview-iframe').src = "";
-        };
-
-        function saveCart() {
-            localStorage.setItem('digiprint_cart', JSON.stringify(cart));
-        }
-
-        window.openCart = function() {
-            document.getElementById('cart-modal').style.display = 'flex';
-            renderCart();
-        };
-
-        window.closeCart = function() {
-            document.getElementById('cart-modal').style.display = 'none';
-        };
-
-        window.addToCart = function(name, type, defaultPages = 1) {
-            const existingIndex = cart.findIndex(item => item.name === name);
-            if (existingIndex > -1) {
-                cart[existingIndex].qty += 1;
-            } else {
-                cart.push({ name: name, type: type, qty: 1, pages: defaultPages, printMode: 'nb_recto_verso' });
-            }
-            saveCart();
-            updateCartCount();
-            alert(`"${name}" ajouté au panier !`);
-        };
-
-        function updateCartCount() {
-            const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
-            const badge = document.getElementById('cart-count');
-            if (badge) badge.innerText = totalItems;
-        }
-
-        window.removeFromCart = function(index) {
-            cart.splice(index, 1);
-            saveCart();
-            updateCartCount();
-            renderCart();
-        };
-
-        window.updateItemOption = function(index, field, value) {
-            if (field === 'printMode') cart[index].printMode = value;
-            else if (field === 'qty') cart[index].qty = parseInt(value) || 1;
-            else if (field === 'pages') cart[index].pages = parseInt(value) || 1;
-            saveCart();
-            renderCart();
-        };
-
-        function calculateItemPrice(item) {
-            const ratePerPage = RATES[item.printMode] || 15;
-            return ratePerPage * item.pages * item.qty;
-        }
-
-        function renderCart() {
-            const container = document.getElementById('cart-items-container');
-            const totalPriceEl = document.getElementById('cart-total-price');
-            if (!container) return;
-
-            if (cart.length === 0) {
-                container.innerHTML = `<p style="text-align: center; color: #6b7280;">Votre panier est vide.</p>`;
-                if (totalPriceEl) totalPriceEl.innerText = '0';
-                return;
-            }
-
-            let html = '';
-            let grandTotal = 0;
-
-            cart.forEach((item, index) => {
-                const itemTotal = calculateItemPrice(item);
-                grandTotal += itemTotal;
-
-                html += `
-                    <div class="cart-item">
-                        <div class="cart-item-header">
-                            <strong>${item.name}</strong>
-                            <button onclick="removeFromCart(${index})" style="background:none; border:none; color:#ef4444; cursor:pointer;"><i class="fa-solid fa-trash"></i></button>
-                        </div>
-                        <div class="cart-item-controls">
-                            <label>Pages: <input type="number" value="${item.pages}" min="1" style="width:50px;" onchange="updateItemOption(${index}, 'pages', this.value)"></label>
-                            <label>Format: 
-                                <select onchange="updateItemOption(${index}, 'printMode', this.value)">
-                                    <option value="nb_recto_verso" ${item.printMode === 'nb_recto_verso' ? 'selected' : ''}>N&B Recto-Verso (15f)</option>
-                                    <option value="nb_verso" ${item.printMode === 'nb_verso' ? 'selected' : ''}>N&B Verso (20f)</option>
-                                    <option value="couleur_recto_verso" ${item.printMode === 'couleur_recto_verso' ? 'selected' : ''}>Couleur Recto-Verso (25f)</option>
-                                    <option value="couleur_verso" ${item.printMode === 'couleur_verso' ? 'selected' : ''}>Couleur Verso (50f)</option>
-                                </select>
-                            </label>
-                        </div>
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px; font-size:0.85rem;">
-                            <label>Quantité: <input type="number" value="${item.qty}" min="1" style="width:40px;" onchange="updateItemOption(${index}, 'qty', this.value)"></label>
-                            <span style="font-weight:bold; color:var(--primary-dark);">${itemTotal} FCFA</span>
-                        </div>
-                    </div>
-                `;
-            });
-
-            container.innerHTML = html;
-            if (totalPriceEl) totalPriceEl.innerText = grandTotal;
-        }
-
-        window.checkoutWhatsApp = function() {
-            if (cart.length === 0) return alert("Panier vide !");
-
-            let message = "Bonjour DIGI-PRINT 👋, je souhaite commander :\n\n";
-            let grandTotal = 0;
-
-            cart.forEach((item, idx) => {
-                const itemTitle = item.name.replace(/\\'/g, "'");
-                const itemTotal = calculateItemPrice(item);
-                grandTotal += itemTotal;
-                message += `${idx + 1}. *${itemTitle}* (Qté: ${item.qty})\n`;
-                message += `   - Pages : ${item.pages} | Format : ${item.printMode}\n`;
-                message += `   - Sous-total : ${itemTotal} FCFA\n\n`;
-            });
-
-            message += `*TOTAL GLOBAL : ${grandTotal} FCFA*\n\nMerci de valider ma commande.`;
-
-            const phoneNumber = "22650989590";
-            window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
         };
     </script>
 </body>
